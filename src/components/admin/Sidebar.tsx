@@ -2,7 +2,7 @@
 
 import axios from "axios";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Store, LucideIcon, Box, Tag, BarChart, Settings, Warehouse, LogOut } from "lucide-react";
+import { LayoutDashboard, Store, LucideIcon, Box, Tag, Settings, Warehouse, LogOut, ChartArea } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -47,7 +47,7 @@ const menuItems: IMenuItems[] = [
     {
         name: 'Laporan Penjualan',
         path: '/reports',
-        icon: BarChart,
+        icon: ChartArea,
         roles: ['superAdmin', 'storeAdmin'],
     },
     { name: 'Settings', path: '/settings', icon: Settings, roles: ['superAdmin', 'storeAdmin'] },
@@ -59,15 +59,11 @@ export default function Sidebar() {
     const visibleMenu = menuItems.filter((item) => item.roles.includes(currentRole));
     return (
         <aside className="flex flex-col h-screen p-4 bg-gray-100 w-64 ">
-
-            <div className="flex items-center gap-2 mb-6 pb-4 ">
-                <Image src="/logo.png" alt="Logo" width={50} height={50} />
-            </div>
             <nav className="flex flex-col gap-2 flex-1">
                 {visibleMenu.map((item) => (
-                    <Link href={item.path} key={item.name} className="flex items-center rounded-lg gap-2 p-2 hover:bg-gray-100">
+                    <Link href={item.path} key={item.name} className="flex items-center rounded-lg gap-2 p-2 hover:bg-gray-100 ">
                         <item.icon />
-                        {item.name}
+                        <span className="hover:font-semibold">{item.name}</span>
                     </Link>
                 ))}
             </nav>
