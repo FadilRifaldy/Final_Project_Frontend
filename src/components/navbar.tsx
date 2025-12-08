@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   MapPin,
@@ -8,86 +9,94 @@ import {
   ShoppingCart,
   Menu,
   X,
+  ChevronDown,
 } from "lucide-react";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const navLinks = [
-    { name: "Home", href: "#" },
-    { name: "Products", href: "#products" },
-    { name: "Category", href: "#category" },
-    { name: "Promo", href: "#promo" },
-    { name: "About Us", href: "#about" },
-  ];
-
   return (
-    <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
       <div className="container mx-auto">
-        <div className="flex items-center justify-between h-16 md:h-20">
-          {/* Logo */}
-          <a href="#" className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-xl gradient-fresh flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-xl">
-                F
-              </span>
-            </div>
-            <span className="text-xl font-bold text-foreground hidden sm:block">
-              Fresh<span className="text-primary">Mart</span>
-            </span>
-          </a>
+        <div className="flex items-center justify-between h-20 gap-4">
+          {/* LEFT — LOGO + CATEGORY DROPDOWN */}
+          <div className="flex items-center gap-6">
+            {/* Logo */}
+            <Link href="/" className="flex items-center gap-2">
+              <img
+                src="/klik.png"
+                className="h-10 object-contain"
+                alt="Klik Logo"
+              />
+            </Link>
 
-          {/* Location Badge - Desktop */}
-          <div className="hidden md:flex items-center gap-2 bg-gray-100 px-4 py-2 rounded-full cursor-pointer hover:bg-secondary/80 transition-colors">
-            <MapPin size={18} className="text-primary" />
-            <span className="text-sm text-foreground font-medium">
-              Jakarta Selatan
-            </span>
+            {/* Category Dropdown */}
+            <DropdownMenu>
+              <DropdownMenuTrigger className="flex items-center gap-1 text-[16px] text-gray-700 hover:text-black focus:outline-none">
+                Category <ChevronDown size={18} />
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent>
+                <DropdownMenuItem>Semua Produk</DropdownMenuItem>
+                <DropdownMenuItem>Minuman</DropdownMenuItem>
+                <DropdownMenuItem>Makanan</DropdownMenuItem>
+                <DropdownMenuItem>Kebutuhan Rumah</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden lg:flex items-center gap-8">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-muted-foreground hover:text-green-500 font-medium transition-colors"
-              >
-                {link.name}
-              </a>
-            ))}
-          </nav>
+          {/* CENTER — SEARCH BAR */}
+          <div className="hidden md:flex flex-1 max-w-2xl">
+            <div className="flex w-full items-center bg-white shadow-sm rounded-xl border overflow-hidden">
+              <Input
+                placeholder="Search Products..."
+                className="border-0 focus-visible:ring-0"
+              />
+              <Button className="rounded-none rounded-r-xl px-4 bg-amber-500 cursor-pointer hover:bg-amber-600">
+                <Search size={18} />
+              </Button>
+            </div>
+          </div>
 
-          {/* Right Actions */}
-          <div className="flex items-center gap-2 md:gap-4">
-            {/* Search - Desktop */}
-            <button className="hidden md:flex p-3 cursor-pointer rounded-lg hover:bg-amber-400 transition-colors">
-              <Search size={20} />
-            </button>
-
-            {/* Search - Mobile */}
-            <button className="md:hidden p-2 rounded-lg hover:bg-amber-300 transition-colors">
-              <Search size={22} />
-            </button>
-
+          {/* RIGHT — CART + LOGIN + REGISTER */}
+          <div className="flex items-center gap-3">
             {/* Cart */}
-            <button className="cursor-pointer relative p-3 rounded-lg hover:bg-amber-400 transition-colors">
-              <ShoppingCart size={20} />
+            <button className="relative p-2 rounded-lg hover:bg-amber-500 transition cursor-pointer">
+              <ShoppingCart size={22} />
 
-              <span className="absolute -top-1 -right-1 w-5 h-5 bg-amber-400 text-accent-foreground text-xs font-bold rounded-full flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
                 3
               </span>
             </button>
 
-            {/* Login Button - Desktop */}
-            <button className="cursor-pointer hidden md:flex btn-primary rounded-full px-4 py-2 items-center bg-green-400 hover:scale-105 transition-transform duration-300">
-              <User size={16} className="mr-2" />
-              Masuk
-            </button>
+            {/* Login */}
+            <Link
+              href="/signInPage"
+              className="cursor-pointer hidden md:flex border border-amber-500 text-amber-500 px-4 py-2 rounded-xl hover:bg-amber-50 transition"
+            >
+              Sign In
+            </Link>
+
+            {/* Register */}
+            <Link
+              href="/signUpPage"
+              className="cursor-pointer hidden md:flex bg-amber-500 text-white px-4 py-2 rounded-xl hover:bg-amber-600 transition"
+            >
+              Sign Up
+            </Link>
 
             {/* Mobile Menu Toggle */}
             <button
-              className="lg:hidden p-2 rounded-lg hover:bg-secondary transition-colors"
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
             >
               {isMenuOpen ? <X size={26} /> : <Menu size={26} />}
@@ -95,43 +104,58 @@ export default function Navbar() {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+        {/* MOBILE DROPDOWN */}
         {isMenuOpen && (
-          <div className="lg:hidden py-4 border-t border-border animate-fade-in">
-            {/* Location - Mobile */}
-            <div className="flex items-center mx-4 gap-2 bg-gray-100 px-4 py-3 rounded-xl mb-4">
-              <MapPin size={18} className="text-primary" />
-              <span className="text-sm text-foreground font-medium">
-                Jakarta Selatan
-              </span>
+          <div className="md:hidden border-t py-4 space-y-4">
+            {/* Search Mobile */}
+            <div className="mx-4 flex w-auto items-center bg-white shadow-sm rounded-xl border overflow-hidden">
+              <Input
+                placeholder="Search Products..."
+                className="border-0 focus-visible:ring-0"
+              />
+              <Button className="rounded-none rounded-r-xl px-4 bg-amber-500">
+                <Search size={18} />
+              </Button>
             </div>
 
-            {/* Search - Mobile */}
-            <div className="flex items-center gap-3 mx-4 mb-4 bg-gray-100 px-4 py-3 rounded-xl">
-              <Search size={20} />
-              <span className="text-sm text-muted-foreground">
-                Cari produk segar...
-              </span>
-            </div>
-
-            <nav className="flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <a
-                  key={link.name}
-                  href={link.href}
-                  className="text-foreground hover:text-green-500 font-medium py-3 px-4 rounded-xl hover:bg-secondary transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {link.name}
-                </a>
-              ))}
+            {/* Menu Items */}
+            <nav className="flex flex-col gap-2 px-4">
+              <a
+                href="#"
+                className="py-2 px-3 rounded-lg hover:bg-gray-100 transition"
+              >
+                Home
+              </a>
+              <a
+                href="#"
+                className="py-2 px-3 rounded-lg hover:bg-gray-100 transition"
+              >
+                Produk
+              </a>
+              <a
+                href="#"
+                className="py-2 px-3 rounded-lg hover:bg-gray-100 transition"
+              >
+                Promo
+              </a>
             </nav>
 
-            <div className="flex justify-center">
-              <button className="mt-4 flex items-center gap-3 mx-4 mb-4 bg-green-400 px-4 py-3 rounded-xl">
-                <User size={16} />
-                Masuk / Daftar
-              </button>
+            <div className="flex flex-col gap-3 px-4">
+              <Link
+                href="/signInPage"
+                className="border border-amber-500 text-amber-500 px-4 py-2 rounded-xl
+               flex items-center justify-center"
+              >
+                Sign In
+              </Link>
+
+              <Link
+                href="/signUpPage"
+                className="bg-amber-500 text-white px-4 py-2 rounded-xl
+               flex items-center justify-center"
+              >
+                Sign Up
+              </Link>
             </div>
           </div>
         )}
