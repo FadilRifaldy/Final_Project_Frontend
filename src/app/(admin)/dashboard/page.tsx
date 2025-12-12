@@ -5,7 +5,7 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 
 export default function DashboardPage() {
-    const [role, setRole] = useState<'superAdmin' | 'storeAdmin'>('superAdmin'); //mock superAdmin dulu ntar diganti
+    const [role, setRole] = useState<"SUPER_ADMIN" | "STORE_ADMIN">("STORE_ADMIN"); //mock SUPER_ADMIN dulu ntar diganti
     // useEffect(() => {
     //     const fetchRole = async () => {
     //         try {
@@ -18,6 +18,6 @@ export default function DashboardPage() {
     //     fetchRole();
     // }, []);
     return (
-        role === 'superAdmin' ? <SuperAdminDashboard /> : <StoreAdminDashboard />
+        role === "SUPER_ADMIN" ? <SuperAdminDashboard /> : <StoreAdminDashboard />
     )
 }
