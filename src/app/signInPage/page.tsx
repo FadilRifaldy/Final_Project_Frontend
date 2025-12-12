@@ -57,7 +57,7 @@ export default function SignInPage() {
 
     toast.success("Login Berhasil");
     // role-based redirect
-    if (res.user.role === "SUPER_ADMIN" || "STORE_ADMIN") {
+    if (res.user.role === "SUPER_ADMIN" || res.user.role === "STORE_ADMIN") {
       router.push("/dashboard");
     } else {
       router.push("/");
