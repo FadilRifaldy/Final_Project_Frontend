@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, SignInValues } from "@/lib/validations/auth";
@@ -20,8 +21,13 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Eye, EyeOff } from "lucide-react";
 
+import { toast } from "sonner";
+import { loginUser } from "@/lib/helpers/auth.backend";
+
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -30,11 +36,32 @@ export default function SignInPage() {
     defaultValues: {
       email: "",
       password: "",
+      remember: false,
     },
   });
 
-  function onSubmit(values: SignInValues) {
-    console.log("Form submitted:", values);
+  async function onSubmit(values: SignInValues) {
+    setLoading(true);
+
+    const res = await loginUser({
+      email: values.email,
+      password: values.password,
+    });
+
+    setLoading(false);
+
+    if (!res.success) {
+      toast.error(res.message || "Login Failed");
+      return;
+    }
+
+    toast.success("Login Berhasil");
+    // role-based redirect
+    if (res.user.role === "SUPER_ADMIN" || "STORE_ADMIN") {
+      router.push("/dashboard");
+    } else {
+      router.push("/");
+    }
   }
 
   return (
@@ -43,16 +70,13 @@ export default function SignInPage() {
         {/* Logo */}
         <div className="flex flex-col items-center mb-8">
           <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center overflow-hidden">
-            {/* Ganti dengan logo kamu */}
             <Image src="/logo.png" alt="Logo" width={64} height={64} />
           </div>
-
           <h1 className="text-xl md:text-2xl font-bold mt-4 text-center">
             Sign In
           </h1>
         </div>
 
-        {/* Form */}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             {/* Email */}
@@ -121,18 +145,19 @@ export default function SignInPage() {
               <button
                 type="button"
                 className="text-primary hover:underline"
-                onClick={() => console.log("Forgot password")}
+                onClick={() => toast("Coming soon")}
               >
                 Forgot password?
               </button>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit */}
             <Button
               type="submit"
-              className="w-full text-white bg-amber-500 hover:bg-amber-600 cursor-pointer"
+              disabled={loading}
+              className="w-full text-white bg-amber-500 hover:bg-amber-600"
             >
-              Masuk
+              {loading ? "Loading..." : "Masuk"}
             </Button>
 
             {/* Divider */}
@@ -147,6 +172,7 @@ export default function SignInPage() {
               type="button"
               variant="outline"
               className="w-full flex items-center justify-center gap-2"
+              onClick={() => toast("Google login is coming soon")}
             >
               <Image
                 src="/google-icon.png"
@@ -157,14 +183,14 @@ export default function SignInPage() {
               Login dengan Google
             </Button>
 
-            {/* Register link */}
+            {/* Register Link */}
             <p className="text-center text-sm text-muted-foreground mt-2">
               Don&apos;t have an account?{" "}
-              <Link
-                href="/signUpPage"
-                className="text-primary font-medium hover:underline"
-              >
-                Sign Up here
+              <Link href="/signUpPage">
+                <span className="text-amber-500 hover:text-amber-600 font-medium hover:underline">
+                  Sign Up
+                </span>{" "}
+                here
               </Link>
             </p>
 

@@ -30,6 +30,7 @@ export const signupSchema = z.object({
     .regex(/[A-Z]/, "Password must contain at least 1 uppercase letter")
     .regex(/\d/, "Password must contain at least 1 number")
     .regex(/[^A-za-z0-9]/, "Password must contain at least 1 symbol"),
+  referralCode: z.string().optional(),
 });
 
 export type SignInValues = z.infer<typeof signInSchema>;
