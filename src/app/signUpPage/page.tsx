@@ -2,10 +2,13 @@
 
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { signupSchema, SignUpValues } from "@/lib/validations/auth";
+import { signUpUser } from "@/lib/helpers/auth.backend";
 
 import {
   Form,
@@ -20,6 +23,9 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
 export default function SignUpPage() {
+  const [hasReferral, setHasReferral] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const form = useForm<SignUpValues>({
     resolver: zodResolver(signupSchema),
     mode: "onChange",
@@ -28,11 +34,28 @@ export default function SignUpPage() {
       name: "",
       email: "",
       password: "",
+      referralCode: "",
     },
   });
 
-  function onSubmit(values: SignUpValues) {
-    console.log("SIGNUP DATA:", values);
+  async function onSubmit(values: SignUpValues) {
+    setLoading(true);
+
+    try {
+      const res = await signUpUser(values);
+
+      if (res.message === "Register Success") {
+        toast.success("Register Success!");
+        router.push("/signInPage");
+      } else {
+        toast.error(res.message);
+      }
+    } catch (err) {
+      console.log("REGISTER FAILED:", err);
+      toast.error("Server Error");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -97,12 +120,44 @@ export default function SignUpPage() {
               )}
             />
 
+            {/* Referral Option */}
+            <div className="space-y-2">
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={hasReferral}
+                  onChange={(e) => setHasReferral(e.target.checked)}
+                />
+                have a referral code?
+              </label>
+
+              {hasReferral && (
+                <FormField
+                  control={form.control}
+                  name="referralCode"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Referral Code</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter referral code (optional)"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
+            </div>
+
             {/* Submit Button */}
             <Button
+              disabled={loading}
               type="submit"
               className="w-full text-white bg-amber-500 hover:bg-amber-600"
             >
-              Sign Up
+              {loading ? "Loading..." : "Sign Up"}
             </Button>
 
             {/* Divider */}
@@ -132,9 +187,8 @@ export default function SignUpPage() {
               Already have an account?{" "}
               <Link
                 href="/signInPage"
-                className="text-primary font-medium hover:underline"
               >
-                Sign In here
+                <span className="font-medium text-amber-500 hover:text-amber-600 hover:underline">Sign In</span> here
               </Link>
             </p>
 
