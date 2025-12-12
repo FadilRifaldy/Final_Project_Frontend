@@ -10,7 +10,7 @@ interface IMenuItems {
     name: string;
     path: string;
     icon: LucideIcon;
-    roles: ('superAdmin' | 'storeAdmin')[];
+    roles: ("SUPER_ADMIN" | "STORE_ADMIN")[];
 }
 
 const menuItems: IMenuItems[] = [
@@ -18,49 +18,49 @@ const menuItems: IMenuItems[] = [
         name: 'Dashboard',
         path: '/dashboard',
         icon: LayoutDashboard,
-        roles: ['superAdmin', 'storeAdmin'],
+        roles: ["SUPER_ADMIN", "STORE_ADMIN"],
     },
     {
         name: 'Store Management',
         path: '/stores',
         icon: Store,
-        roles: ['superAdmin'],
+        roles: ["SUPER_ADMIN"],
     },
     {
         name: "Edit Store Info",
         path: '/stores/edit',
         icon: MonitorCog,
-        roles: ['storeAdmin'],
+        roles: ["STORE_ADMIN"],
     },
     {
         name: 'Product Management',
         path: '/products',
         icon: Box,
-        roles: ['superAdmin', 'storeAdmin'],
+        roles: ["SUPER_ADMIN", "STORE_ADMIN"],
     },
     {
         name: 'Stock Management',
         path: '/stocks',
         icon: Warehouse,
-        roles: ['superAdmin', 'storeAdmin'],
+        roles: ["SUPER_ADMIN", "STORE_ADMIN"],
     },
     {
         name: 'Discount Management',
         path: '/discounts',
         icon: Tag,
-        roles: ['superAdmin', 'storeAdmin'],
+        roles: ["SUPER_ADMIN", "STORE_ADMIN"],
     },
     {
         name: 'Sales Report',
         path: '/reports',
         icon: ChartArea,
-        roles: ['superAdmin', 'storeAdmin'],
+        roles: ["SUPER_ADMIN", "STORE_ADMIN"],
     },
-    { name: 'Settings', path: '/settings', icon: Settings, roles: ['superAdmin', 'storeAdmin'] },
+    { name: 'Settings', path: '/settings', icon: Settings, roles: ["SUPER_ADMIN", "STORE_ADMIN"] },
 ];
 
 export default function Sidebar() {
-    const currentRole = "superAdmin"; // mock data role user
+    const currentRole = "STORE_ADMIN"; // mock data role user
 
     const visibleMenu = menuItems.filter((item) => item.roles.includes(currentRole));
     return (
