@@ -141,7 +141,7 @@ export default function Navbar() {
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent className="w-40">
-                  <DropdownMenuItem onClick={() => router.push("/profile")}>
+                  <DropdownMenuItem onClick={() => router.push("/userProfile")}>
                     Profile
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={handleLogout} className="text-red-500">

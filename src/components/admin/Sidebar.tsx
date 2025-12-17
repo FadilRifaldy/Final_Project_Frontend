@@ -3,6 +3,7 @@
 import axios from "axios";
 import { useEffect, useState } from "react";
 import {
+  HomeIcon,
   LayoutDashboard,
   Store,
   LucideIcon,
@@ -25,6 +26,12 @@ interface IMenuItems {
 }
 
 const menuItems: IMenuItems[] = [
+  {
+    name: "Home",
+    path: "/",
+    icon: HomeIcon,
+    roles: ["SUPER_ADMIN", "STORE_ADMIN"],
+  },
   {
     name: "Dashboard",
     path: "/dashboard",
