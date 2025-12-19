@@ -1,6 +1,6 @@
 import axios, { AxiosError } from "axios";
 
-const BASE_URL = "http://localhost:8800";
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export interface IUserRegister {
   name: string;
@@ -226,9 +226,7 @@ export async function confirmEmailVerification(
     if (axios.isAxiosError(error)) {
       return {
         success: false,
-        message:
-          error.response?.data?.message ||
-          "Verifikasi email gagal",
+        message: error.response?.data?.message || "Verifikasi email gagal",
       };
     }
 
