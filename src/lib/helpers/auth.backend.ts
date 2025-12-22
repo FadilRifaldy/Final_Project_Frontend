@@ -227,9 +227,7 @@ export async function confirmEmailVerification(
     if (axios.isAxiosError(error)) {
       return {
         success: false,
-        message:
-          error.response?.data?.message ||
-          "Verifikasi email gagal",
+        message: error.response?.data?.message || "Verifikasi email gagal",
       };
     }
 
@@ -335,7 +333,7 @@ export async function checkPasswordToken(
 
     return {
       valid: true,
-      type: res.data.type, // ✅ WAJIB ADA
+      type: res.data.type, 
       requireOldPassword: res.data.requireOldPassword,
     };
   } catch (error) {
@@ -343,7 +341,7 @@ export async function checkPasswordToken(
 
     return {
       valid: false,
-      type: "PASSWORD_RESET", // ⬅️ dummy value (tidak dipakai saat valid=false)
+      type: "PASSWORD_RESET", 
       requireOldPassword: false,
       message:
         err.response?.data?.message ||
@@ -352,9 +350,6 @@ export async function checkPasswordToken(
   }
 }
 
-/* ======================
-   TYPES
-====================== */
 export interface CloudinarySignature {
   timestamp: number;
   signature: string;
@@ -363,9 +358,6 @@ export interface CloudinarySignature {
   folder: string;
 }
 
-/* ======================
-   GET SIGNATURE (BE)
-====================== */
 export const getCloudinarySignature = async (): Promise<CloudinarySignature> => {
   try {
     const { data } = await axios.get(
@@ -385,9 +377,6 @@ export const getCloudinarySignature = async (): Promise<CloudinarySignature> => 
   }
 };
 
-/* ======================
-   UPLOAD TO CLOUDINARY
-====================== */
 export const uploadToCloudinary = async (
   file: File,
   signature: CloudinarySignature,
@@ -429,4 +418,3 @@ export const uploadToCloudinary = async (
     throw new Error("Terjadi kesalahan tidak terduga saat upload");
   }
 };
-
