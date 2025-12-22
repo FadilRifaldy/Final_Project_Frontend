@@ -142,13 +142,12 @@ export default function SignInPage() {
                 <span className="text-muted-foreground">Remember me</span>
               </div>
 
-              <button
-                type="button"
-                className="text-primary hover:underline"
-                onClick={() => toast("Coming soon")}
+              <Button
+                variant="link"
+                onClick={() => router.push("/reset-password?mode=reset")}
               >
                 Forgot password?
-              </button>
+              </Button>
             </div>
 
             {/* Submit */}
