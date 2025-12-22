@@ -159,6 +159,7 @@ export interface IUpdateProfilePayload {
   name?: string;
   email?: string;
   phone?: string;
+  profileImage?: string;
 }
 
 export interface IUpdateProfileResponse {
@@ -236,3 +237,184 @@ export async function confirmEmailVerification(
     };
   }
 }
+
+interface ISendResetPasswordResult {
+  success: boolean;
+  message: string;
+}
+
+interface ISendPasswordLinkPayload {
+  email: string;
+  mode: "reset" | "change";
+};
+
+export async function sendPassLinkEmail(
+ payload: ISendPasswordLinkPayload
+): Promise<ISendResetPasswordResult> {
+  try {
+    const res = await axios.post(
+      `${BASE_URL}/auth/password/send`,
+      payload,
+      { withCredentials: true }
+    );
+
+    return {
+      success: true,
+      message: res.data.message,
+    };
+  } catch (error) {
+    const err = error as AxiosError<{ message: string }>;
+
+    return {
+      success: false,
+      message:
+        err.response?.data?.message ||
+        "Gagal mengirim email reset password",
+    };
+  }
+}
+
+interface IConfirmPasswordPayload {
+  token: string;
+  newPassword: string;
+  oldPassword?: string;
+}
+
+interface IConfirmPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+interface IErrorResponse {
+  message: string;
+}
+
+export async function confirmResetPassword(
+  payload: IConfirmPasswordPayload
+): Promise<IConfirmPasswordResponse> {
+  try {
+    const res = await axios.post(
+      `${BASE_URL}/auth/password/confirm`,
+      payload,
+      { withCredentials: true }
+    );
+
+    return {
+      success: true,
+      message: res.data.message,
+    };
+  } catch (error) {
+    const err = error as AxiosError<IErrorResponse>;
+
+    return {
+      success: false,
+      message:
+        err.response?.data?.message ||
+        "Gagal memperbarui password",
+    };
+  }
+}
+
+interface ICheckPasswordTokenResponse {
+  valid: boolean;
+  type: "PASSWORD_RESET" | "PASSWORD_CHANGE";
+  requireOldPassword: boolean;
+  message?: string;
+}
+
+export async function checkPasswordToken(
+  token: string
+): Promise<ICheckPasswordTokenResponse> {
+  try {
+    const res = await axios.get(
+      `${BASE_URL}/auth/password/check-token`,
+      { params: { token } }
+    );
+
+    return {
+      valid: true,
+      type: res.data.type, 
+      requireOldPassword: res.data.requireOldPassword,
+    };
+  } catch (error) {
+    const err = error as AxiosError<{ message: string }>;
+
+    return {
+      valid: false,
+      type: "PASSWORD_RESET", 
+      requireOldPassword: false,
+      message:
+        err.response?.data?.message ||
+        "Token tidak valid atau sudah kadaluarsa",
+    };
+  }
+}
+
+export interface CloudinarySignature {
+  timestamp: number;
+  signature: string;
+  apiKey: string;
+  cloudName: string;
+  folder: string;
+}
+
+export const getCloudinarySignature = async (): Promise<CloudinarySignature> => {
+  try {
+    const { data } = await axios.get(
+      `${BASE_URL}/api/cloudinary/signature`,
+      { withCredentials: true }
+    );
+
+    return data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.message || "Gagal mendapatkan signature"
+      );
+    }
+
+    throw new Error("Terjadi kesalahan tidak terduga");
+  }
+};
+
+export const uploadToCloudinary = async (
+  file: File,
+  signature: CloudinarySignature,
+  onProgress?: (percent: number) => void
+): Promise<string> => {
+  const formData = new FormData();
+
+  formData.append("file", file);
+  formData.append("api_key", signature.apiKey);
+  formData.append("timestamp", signature.timestamp.toString());
+  formData.append("signature", signature.signature);
+  formData.append("folder", signature.folder);
+
+  try {
+    const res = await axios.post(
+      `https://api.cloudinary.com/v1_1/${signature.cloudName}/image/upload`,
+      formData,
+      {
+        onUploadProgress: (progressEvent) => {
+          if (!progressEvent.total) return;
+
+          const percent = Math.round(
+            (progressEvent.loaded * 100) / progressEvent.total
+          );
+          onProgress?.(percent);
+        },
+      }
+    );
+
+    return res.data.secure_url;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      throw new Error(
+        error.response?.data?.error?.message ||
+          "Upload ke Cloudinary gagal"
+      );
+    }
+
+    throw new Error("Terjadi kesalahan tidak terduga saat upload");
+  }
+};
