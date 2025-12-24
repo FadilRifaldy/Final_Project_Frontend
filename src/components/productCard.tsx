@@ -1,6 +1,7 @@
 // components/ProductCardMock.tsx
 
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 type DummyProduct = {
   id: number;
@@ -16,19 +17,18 @@ type DummyProduct = {
 export function ProductCardMock({ product }: { product: DummyProduct }) {
   return (
     <div className="group relative rounded-2xl bg-card border border-border/50 shadow-sm overflow-hidden transition-all hover:shadow-md">
-      
-      {/* Image */}
       <div className="relative aspect-square overflow-hidden bg-muted">
-        <img
+        <Image
           src={product.image}
           alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
+          sizes="100vw"
         />
       </div>
 
       {/* Content */}
       <div className="p-4 space-y-3">
-        
         {/* Category */}
         <span className="inline-block bg-muted px-2 py-1 rounded-full text-[10px] text-muted-foreground">
           {product.category}
@@ -46,11 +46,8 @@ export function ProductCardMock({ product }: { product: DummyProduct }) {
         </div>
 
         {/* Button */}
-        <Button className="w-full">
-          Add to Cart
-        </Button>
+        <Button className="w-full">Add to Cart</Button>
       </div>
     </div>
   );
 }
-
