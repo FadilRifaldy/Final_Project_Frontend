@@ -12,9 +12,34 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
 import { menuItems, type IMenuItems } from "./SidebarMenu";
 
-export default function Sidebar() {
+interface SidebarProps {
+  isMobileOpen?: boolean;
+  onMobileClose?: () => void;
+  isCollapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
+
+export default function Sidebar({
+  isMobileOpen = false,
+  onMobileClose,
+  isCollapsed = false,
+  onToggleCollapse
+}: SidebarProps) {
   const [role, setRole] = useState<string>("");
   const [user, setUser] = useState<{
     name: string;
@@ -82,14 +107,16 @@ export default function Sidebar() {
     }
   };
 
-  return (
-    <aside className="flex h-screen w-64 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+  // Sidebar content component (reusable for both mobile and desktop)
+  const SidebarContent = ({ collapsed = false }: { collapsed?: boolean }) => (
+    <>
       {/* Header/Branding dengan User Info */}
       <div className="flex flex-col border-b border-sidebar-border">
-        <div className="flex h-16 items-center px-6">
-          <h2 className="text-lg font-semibold">Admin Panel</h2>
+        <div className={cn("flex h-16 items-center", collapsed ? "justify-center px-2" : "px-6")}>
+          {!collapsed && <h2 className="text-lg font-semibold">Admin Panel</h2>}
+          {collapsed && <h2 className="text-lg font-semibold">AP</h2>}
         </div>
-        {user && (
+        {user && !collapsed && (
           <div className="flex items-center gap-3 px-6 pb-4">
             <Avatar className="h-10 w-10">
               {user.profileImage && (
@@ -107,6 +134,26 @@ export default function Sidebar() {
             </div>
           </div>
         )}
+        {user && collapsed && (
+          <div className="flex items-center justify-center px-2 pb-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Avatar className="h-10 w-10">
+                  {user.profileImage && (
+                    <AvatarImage src={user.profileImage} alt={user.name} />
+                  )}
+                  <AvatarFallback className="bg-sidebar-accent text-sidebar-accent-foreground">
+                    {getInitials(user.name)}
+                  </AvatarFallback>
+                </Avatar>
+              </TooltipTrigger>
+              <TooltipContent side="right">
+                <p className="font-medium">{user.name}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        )}
       </div>
 
       {/* Navigation */}
@@ -118,6 +165,43 @@ export default function Sidebar() {
 
           // Jika menu punya children, render sebagai collapsible
           if (hasChildren) {
+            if (collapsed) {
+              // Collapsed mode: Show icon with tooltip
+              return (
+                <Tooltip key={item.name}>
+                  <TooltipTrigger asChild>
+                    <div
+                      className={cn(
+                        "flex items-center justify-center rounded-lg p-2 text-sm font-medium transition-colors cursor-pointer",
+                        isActive || isChildActive
+                          ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      )}
+                    >
+                      <item.icon className="h-5 w-5" />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p>{item.name}</p>
+                    {item.children && (
+                      <div className="mt-1 space-y-1">
+                        {item.children.map((child) => (
+                          <Link
+                            key={child.path}
+                            href={child.path}
+                            onClick={onMobileClose}
+                            className="block text-xs hover:underline"
+                          >
+                            {child.name}
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </TooltipContent>
+                </Tooltip>
+              );
+            }
+
             return (
               <Collapsible
                 key={item.name}
@@ -145,6 +229,7 @@ export default function Sidebar() {
                       <Link
                         key={child.path}
                         href={child.path}
+                        onClick={onMobileClose}
                         className={cn(
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                           isChildPathActive
@@ -163,10 +248,35 @@ export default function Sidebar() {
           }
 
           // Menu biasa tanpa children
+          if (collapsed) {
+            return (
+              <Tooltip key={item.name}>
+                <TooltipTrigger asChild>
+                  <Link
+                    href={item.path || "#"}
+                    onClick={onMobileClose}
+                    className={cn(
+                      "flex items-center justify-center rounded-lg p-2 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right">
+                  <p>{item.name}</p>
+                </TooltipContent>
+              </Tooltip>
+            );
+          }
+
           return (
             <Link
               href={item.path || "#"}
               key={item.name}
+              onClick={onMobileClose}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
@@ -183,14 +293,56 @@ export default function Sidebar() {
 
       {/* Footer/Logout */}
       <div className="border-t border-sidebar-border p-4">
-        <button
-          onClick={handleLogout}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
-        >
-          <LogOut className="h-5 w-5" />
-          <span>Logout</span>
-        </button>
+        {collapsed ? (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={handleLogout}
+                className="flex w-full items-center justify-center rounded-lg p-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+              >
+                <LogOut className="h-5 w-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="right">
+              <p>Logout</p>
+            </TooltipContent>
+          </Tooltip>
+        ) : (
+          <button
+            onClick={handleLogout}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+          >
+            <LogOut className="h-5 w-5" />
+            <span>Logout</span>
+          </button>
+        )}
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      {/* Mobile Drawer */}
+      <Sheet open={isMobileOpen} onOpenChange={onMobileClose}>
+        <SheetContent
+          side="left"
+          className="w-64 p-0 md:hidden"
+        >
+          <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
+            <SidebarContent />
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* Desktop Sidebar */}
+      <aside
+        className={cn(
+          "hidden md:flex h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300",
+          isCollapsed ? "w-16" : "w-64"
+        )}
+      >
+        <SidebarContent collapsed={isCollapsed} />
+      </aside>
+    </TooltipProvider>
   );
 }

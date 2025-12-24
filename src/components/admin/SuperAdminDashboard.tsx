@@ -29,8 +29,8 @@ export default function SuperAdminDashboard() {
   }, [fetchCategories]);
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4">Dashboard Super Admin</h1>
+    <div className="p-4 md:p-8">
+      <h1 className="text-2xl md:text-3xl font-bold mb-4">Dashboard Super Admin</h1>
       <p className="text-gray-600 mb-8">Selamat datang di halaman dashboard!</p>
 
       {/* Stats Cards */}

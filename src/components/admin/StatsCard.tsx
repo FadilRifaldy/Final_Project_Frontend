@@ -18,13 +18,13 @@ export default function StatsCard({
     trend,
 }: IStatsCard) {
     return (
-        <Card className="p-4 hover:shadow-xl transition-shadow bg-gray-200">
-            <CardHeader>
-                <CardTitle className="flex justify-between">
-                    {title}
+        <Card className="p-3 md:p-4 hover:shadow-xl transition-shadow bg-gray-200">
+            <CardHeader className="p-0 pb-2 md:pb-3">
+                <CardTitle className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
+                    <span className="text-sm md:text-base">{title}</span>
                     {trend && (
                         <span
-                            className={`text-sm ${trend.isPositive ? "text-green-500" : "text-red-500"
+                            className={`text-xs md:text-sm font-medium ${trend.isPositive ? "text-green-500" : "text-red-500"
                                 }`}
                         >
                             {trend.isPositive ? "+" : "-"}{trend.value}%
@@ -32,10 +32,10 @@ export default function StatsCard({
                     )}
                 </CardTitle>
             </CardHeader>
-            <CardContent>
-                <div className="flex items-center gap-2">
-                    <Icon className="w-6 h-6 text-primary" />
-                    <span className="text-2xl font-bold">{value}</span>
+            <CardContent className="p-0">
+                <div className="flex items-center gap-2 md:gap-3">
+                    <Icon className="w-5 h-5 md:w-6 md:h-6 text-primary flex-shrink-0" />
+                    <span className="text-xl md:text-2xl font-bold truncate">{value}</span>
                 </div>
             </CardContent>
         </Card>

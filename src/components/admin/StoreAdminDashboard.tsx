@@ -3,8 +3,8 @@ import { Box, ClockAlert, Percent, ShoppingCart } from "lucide-react";
 
 export default function StoreAdminDashboard() {
     return (
-        <div className="p-8">
-            <h1 className="text-3xl font-bold mb-4">Dashboard Store Admin</h1>
+        <div className="p-4 md:p-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-4">Dashboard Store Admin</h1>
             <p className="text-gray-600">Selamat datang di halaman dashboard!</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 border-gray-300 border rounded-lg p-4">
