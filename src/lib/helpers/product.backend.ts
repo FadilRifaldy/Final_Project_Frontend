@@ -1,0 +1,81 @@
+import axios from "axios";
+import api from "../api/axios";
+import { IProduct } from "@/types/product";
+
+export default async function getProducts(): Promise<IProduct[]> {
+  try {
+    const response = await api.get("/api/products");
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message = error.response?.data?.message || "Failed to get products";
+      throw new Error(message);
+    }
+    throw new Error("Unexpected error occurred");
+  }
+}
+
+export async function createProduct(
+  name: string,
+  description: string,
+  categoryId: string,
+  images?: string[]
+): Promise<IProduct> {
+  try {
+    const response = await api.post("/api/products", {
+      name,
+      description,
+      categoryId,
+      images: images || [],
+    });
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message || "Failed to create product";
+      throw new Error(message);
+    }
+
+    throw new Error("Unexpected error occurred");
+  }
+}
+
+export async function updateProduct(
+  id: string,
+  name: string,
+  description: string,
+  categoryId: string,
+  images?: string[],
+  isActive?: boolean
+): Promise<IProduct> {
+  try {
+    const response = await api.put(`/api/products/${id}`, {
+      name,
+      description,
+      categoryId,
+      images: images || [],
+      isActive,
+    });
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message || "Failed to update product";
+      throw new Error(message);
+    }
+    throw new Error("Unexpected error occurred");
+  }
+}
+
+export async function deleteProduct(id: string): Promise<void> {
+  try {
+    await api.delete(`/api/products/${id}`);
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message || "Failed to delete product";
+      throw new Error(message);
+    }
+    throw new Error("Unexpected error occurred");
+  }
+}
