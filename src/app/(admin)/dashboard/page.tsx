@@ -37,5 +37,5 @@ export default function DashboardPage() {
   if (role === "SUPER_ADMIN") return <SuperAdminDashboard />;
   if (role === "STORE_ADMIN") return <StoreAdminDashboard />;
 
-  return <p>Unauthorized</p>;
+  return <p className="text-center p-10">Unauthorized</p>;
 }
