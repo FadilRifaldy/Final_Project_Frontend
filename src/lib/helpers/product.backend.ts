@@ -1,6 +1,6 @@
 import axios from "axios";
 import api from "../api/axios";
-import { IProduct } from "@/types/product";
+import { IProduct, IProductImage } from "@/types/product";
 
 export default async function getProducts(): Promise<IProduct[]> {
   try {
@@ -79,3 +79,30 @@ export async function deleteProduct(id: string): Promise<void> {
     throw new Error("Unexpected error occurred");
   }
 }
+
+export async function uploadProductImages(
+  productId: string,
+  files: File[]
+): Promise<IProductImage[]> {
+  try {
+    const formData = new FormData();
+
+    files.forEach((file) => {
+      formData.append("images", file);
+    });
+    const response = await api.post(
+      `/api/products/${productId}/images`,
+      formData
+    );
+
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message || "Failed to upload product images";
+      throw new Error(message);
+    }
+    throw new Error("Unexpected error occurred");
+  }
+}
+
