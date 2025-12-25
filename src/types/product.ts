@@ -2,7 +2,7 @@ export interface IProduct {
     id: string;
     name: string;
     description: string;
-    images: string[];
+    images: IProductImage[];
     categoryId: string;
     createdAt: string;
     updatedAt: string;
@@ -39,4 +39,13 @@ export interface IUpdateProductVariant {
     size?: string;
     weight?: number;
     isActive?: boolean;
+}
+
+export interface IProductImage {
+    id: string;
+    productId: string;
+    imageUrl: string;
+    createdAt: string;
+    updatedAt: string;
+    order: number;
 }

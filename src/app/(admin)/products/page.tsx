@@ -9,6 +9,7 @@ import { useCategoryStore } from "@/lib/store/categoryStore";
 import { ProductTable } from "@/components/products/ProductTable";
 import { ProductDialog } from "@/components/products/ProductDialog";
 import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
+import { toast } from "sonner";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -22,7 +23,12 @@ export default function ProductsPage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [categoryId, setCategoryId] = useState("");
-  const [isActive, setIsActive] = useState(true);
+
+  // Image upload state
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+
+  // Local loading state for dialog
+  const [isSaving, setIsSaving] = useState(false);
 
   // Ambil data dan functions dari Zustand stores
   const {
@@ -33,6 +39,7 @@ export default function ProductsPage() {
     addProduct,
     updateProduct,
     deleteProduct,
+    uploadProductImages,
   } = useProductStore();
 
   const { categories, fetchCategories } = useCategoryStore();
@@ -50,7 +57,7 @@ export default function ProductsPage() {
     setName("");
     setDescription("");
     setCategoryId("");
-    setIsActive(true);
+    setSelectedFiles([]);  // Reset selected files
     setDialogOpen(true);
   };
 
@@ -61,7 +68,7 @@ export default function ProductsPage() {
     setName(product.name);
     setDescription(product.description);
     setCategoryId(product.categoryId);
-    setIsActive(product.isActive);
+    setSelectedFiles([]);  // Reset selected files for edit mode
     setDialogOpen(true);
   };
 
@@ -86,20 +93,68 @@ export default function ProductsPage() {
   };
 
   // Handler untuk save (create atau update)
-  const handleSave = () => {
-    if (dialogMode === "create") {
-      addProduct(name, description, categoryId, []);
-    } else if (dialogMode === "edit" && selectedProduct) {
-      updateProduct(
-        selectedProduct.id,
-        name,
-        description,
-        categoryId,
-        [],
-        isActive
-      );
+  const handleSave = async () => {
+    setIsSaving(true);
+
+    try {
+      if (dialogMode === "create") {
+        // 1. Create product first
+        const newProduct = await addProduct(name, description, categoryId, []);
+
+        // 2. Upload images if any selected
+        if (selectedFiles.length > 0 && newProduct) {
+          // Get the product ID from the newly created product
+          // Since addProduct updates the store, we need to get the latest product
+          const latestProducts = products;
+          const createdProduct = latestProducts[latestProducts.length - 1];
+
+          if (createdProduct) {
+            await uploadProductImages(createdProduct.id, selectedFiles);
+          }
+        }
+
+        // Show success toast
+        toast.success("Product created successfully!", {
+          description: selectedFiles.length > 0
+            ? `Product created with ${selectedFiles.length} image(s)`
+            : "Product created without images"
+        });
+      } else if (dialogMode === "edit" && selectedProduct) {
+        // 1. Update product data
+        await updateProduct(
+          selectedProduct.id,
+          name,
+          description,
+          categoryId,
+          []  // Images handled separately
+        );
+
+        // 2. Upload new images if any selected
+        if (selectedFiles.length > 0) {
+          await uploadProductImages(selectedProduct.id, selectedFiles);
+        }
+
+        // Show success toast
+        toast.success("Product updated successfully!", {
+          description: selectedFiles.length > 0
+            ? `Updated with ${selectedFiles.length} new image(s)`
+            : "Product updated"
+        });
+      }
+
+      // Close dialog and reset
+      setDialogOpen(false);
+      setSelectedFiles([]);
+    } catch (error) {
+      console.error("Error saving product:", error);
+
+      // Show error toast
+      toast.error("Failed to save product", {
+        description: error instanceof Error ? error.message : "An error occurred"
+      });
+    } finally {
+      setIsSaving(false);
     }
-    setDialogOpen(false);
   };
 
   return (
@@ -143,9 +198,11 @@ export default function ProductsPage() {
         setDescription={setDescription}
         categoryId={categoryId}
         setCategoryId={setCategoryId}
-        isActive={isActive}
-        setIsActive={setIsActive}
         categories={categories}
+        selectedFiles={selectedFiles}
+        setSelectedFiles={setSelectedFiles}
+        existingImages={selectedProduct?.images || []}
+        loading={isSaving}
         onSave={handleSave}
       />
 

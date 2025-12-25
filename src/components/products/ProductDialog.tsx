@@ -2,6 +2,10 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Button } from "../ui/button"
 import { Input } from "../ui/input"
 import { ICategory } from "@/types/category"
+import { IProductImage } from "@/types/product"
+import { ImageUploader } from "./ImageUploader"
+import { ImagePreview } from "./ImagePreview"
+import { Loader2 } from "lucide-react"
 
 interface ProductDialogProps {
     open: boolean;
@@ -13,9 +17,13 @@ interface ProductDialogProps {
     setDescription: (description: string) => void;
     categoryId: string;
     setCategoryId: (categoryId: string) => void;
-    isActive: boolean;
-    setIsActive: (isActive: boolean) => void;
     categories: ICategory[];
+    // Image-related props
+    selectedFiles: File[];
+    setSelectedFiles: (files: File[]) => void;
+    existingImages?: IProductImage[];
+    // Loading state
+    loading?: boolean;
     onSave: () => void;
 }
 
@@ -29,9 +37,11 @@ export function ProductDialog({
     setDescription,
     categoryId,
     setCategoryId,
-    isActive,
-    setIsActive,
     categories,
+    selectedFiles,
+    setSelectedFiles,
+    existingImages = [],
+    loading = false,
     onSave
 }: ProductDialogProps) {
     return (
@@ -90,28 +100,56 @@ export function ProductDialog({
                         />
                     </div>
 
-                    {mode === "edit" && (
-                        <div className="flex items-center gap-2">
-                            <input
-                                type="checkbox"
-                                id="isActive"
-                                checked={isActive}
-                                onChange={(e) => setIsActive(e.target.checked)}
-                                className="h-4 w-4 rounded border-gray-300"
+                    {/* Divider */}
+                    <div className="border-t pt-4">
+                        <label className="text-sm font-medium mb-2 block">
+                            Product Images
+                        </label>
+
+                        {/* Existing Images (Edit Mode) */}
+                        {mode === "edit" && existingImages.length > 0 && (
+                            <div className="mb-4">
+                                <p className="text-xs text-gray-500 mb-2">Existing Images:</p>
+                                <ImagePreview images={existingImages} readOnly />
+                            </div>
+                        )}
+
+                        {/* Image Uploader */}
+                        <div>
+                            <p className="text-xs text-gray-500 mb-2">
+                                {mode === "create"
+                                    ? "Upload images for this product:"
+                                    : "Add more images:"}
+                            </p>
+                            <ImageUploader
+                                onFilesSelected={setSelectedFiles}
+                                maxFiles={5}
+                                maxSizeMB={5}
                             />
-                            <label htmlFor="isActive" className="text-sm font-medium">
-                                Product is active
-                            </label>
                         </div>
-                    )}
+                    </div>
                 </div>
 
                 <DialogFooter>
-                    <Button variant="outline" onClick={() => onOpenChange(false)}>
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={loading}
+                    >
                         Cancel
                     </Button>
-                    <Button onClick={onSave}>
-                        {mode === "create" ? "Create" : "Update"}
+                    <Button
+                        onClick={onSave}
+                        disabled={loading}
+                    >
+                        {loading ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                {mode === "create" ? "Creating..." : "Updating..."}
+                            </>
+                        ) : (
+                            mode === "create" ? "Create" : "Update"
+                        )}
                     </Button>
                 </DialogFooter>
             </DialogContent>

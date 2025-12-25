@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -56,8 +57,8 @@ export default function DynamicBreadcrumb() {
         <Breadcrumb>
             <BreadcrumbList>
                 {breadcrumbs.map((crumb, index) => (
-                    <>
-                        <BreadcrumbItem key={crumb.href}>
+                    <React.Fragment key={crumb.href}>
+                        <BreadcrumbItem>
                             {crumb.isLast ? (
                                 <BreadcrumbPage>{crumb.label}</BreadcrumbPage>
                             ) : (
@@ -69,11 +70,11 @@ export default function DynamicBreadcrumb() {
                             )}
                         </BreadcrumbItem>
                         {!crumb.isLast && (
-                            <BreadcrumbSeparator key={`sep-${index}`}>
+                            <BreadcrumbSeparator>
                                 <ChevronRight className="h-4 w-4" />
                             </BreadcrumbSeparator>
                         )}
-                    </>
+                    </React.Fragment>
                 ))}
             </BreadcrumbList>
         </Breadcrumb>

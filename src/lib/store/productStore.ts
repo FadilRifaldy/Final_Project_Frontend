@@ -4,6 +4,7 @@ import getProducts, {
   createProduct,
   updateProduct,
   deleteProduct,
+  uploadProductImages,
 } from "../helpers/product.backend";
 
 interface ProductState {
@@ -28,6 +29,7 @@ interface ProductState {
     isActive?: boolean
   ) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
+  uploadProductImages: (productId: string, files: File[]) => Promise<void>;
 }
 
 export const useProductStore = create<ProductState>((set) => ({
@@ -125,6 +127,35 @@ export const useProductStore = create<ProductState>((set) => ({
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to delete product";
+      set({
+        error: message,
+        loading: false,
+      });
+    }
+  },
+
+  uploadProductImages: async (
+    productId: string,
+    files: File[]
+  ) => {
+    set({ loading: true, error: null });
+
+    try {
+      // Upload semua files sekaligus
+      const uploadedImages = await uploadProductImages(productId, files);
+
+      // Update product di state dengan images yang baru diupload
+      set(state => ({
+        products: state.products.map((prod) =>
+          prod.id === productId
+            ? { ...prod, images: [...prod.images, ...uploadedImages] }
+            : prod
+        ),
+        loading: false,
+      }));
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to upload product images";
       set({
         error: message,
         loading: false,

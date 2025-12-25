@@ -29,7 +29,6 @@ export function ProductTable({
                     <TableHead>Name</TableHead>
                     <TableHead>Description</TableHead>
                     <TableHead>Category</TableHead>
-                    <TableHead>Status</TableHead>
                     <TableHead>Actions</TableHead>
                 </TableRow>
             </TableHeader>
@@ -37,7 +36,7 @@ export function ProductTable({
                 {products.length === 0 && !loading ? (
                     <TableRow>
                         <TableCell
-                            colSpan={5}
+                            colSpan={4}
                             className="text-center text-muted-foreground"
                         >
                             No products found
@@ -56,16 +55,6 @@ export function ProductTable({
                                     {product.description}
                                 </TableCell>
                                 <TableCell>{category?.name || "-"}</TableCell>
-                                <TableCell>
-                                    <span
-                                        className={`px-2 py-1 rounded text-xs ${product.isActive
-                                            ? "bg-green-100 text-green-800"
-                                            : "bg-gray-100 text-gray-800"
-                                            }`}
-                                    >
-                                        {product.isActive ? "Active" : "Inactive"}
-                                    </span>
-                                </TableCell>
                                 <TableCell>
                                     {currentRole === "SUPER_ADMIN" && (
                                         <div className="flex gap-2">
