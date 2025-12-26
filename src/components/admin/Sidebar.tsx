@@ -175,7 +175,7 @@ export default function Sidebar({
                         "flex items-center justify-center rounded-lg p-2 text-sm font-medium transition-colors cursor-pointer",
                         isActive || isChildActive
                           ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                          : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                          : "text-sidebar-foreground/70 hover:bg-amber-500/10 hover:text-amber-600"
                       )}
                     >
                       <item.icon className="h-5 w-5" />
@@ -213,7 +213,7 @@ export default function Sidebar({
                     "flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                     isActive || isChildActive
                       ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                      : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                      : "text-sidebar-foreground/70 hover:bg-amber-500/10 hover:text-amber-600"
                   )}
                 >
                   <div className="flex items-center gap-3">
@@ -234,7 +234,7 @@ export default function Sidebar({
                           "flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
                           isChildPathActive
                             ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
-                            : "text-sidebar-foreground/60 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                            : "text-sidebar-foreground/60 hover:bg-amber-500/10 hover:text-amber-600"
                         )}
                       >
                         {child.icon && <child.icon className="h-4 w-4" />}
@@ -259,7 +259,7 @@ export default function Sidebar({
                       "flex items-center justify-center rounded-lg p-2 text-sm font-medium transition-colors",
                       isActive
                         ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                        : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                        : "text-sidebar-foreground/70 hover:bg-amber-500/10 hover:text-amber-600"
                     )}
                   >
                     <item.icon className="h-5 w-5" />
@@ -281,7 +281,7 @@ export default function Sidebar({
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
                   ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-amber-500/10 hover:text-amber-600"
               )}
             >
               <item.icon className="h-5 w-5" />
@@ -298,7 +298,7 @@ export default function Sidebar({
             <TooltipTrigger asChild>
               <button
                 onClick={handleLogout}
-                className="flex w-full items-center justify-center rounded-lg p-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+                className="flex w-full items-center justify-center rounded-lg p-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-amber-500/10 hover:text-amber-600"
               >
                 <LogOut className="h-5 w-5" />
               </button>
@@ -310,7 +310,7 @@ export default function Sidebar({
         ) : (
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-sidebar-foreground/70 transition-colors hover:bg-amber-500/10 hover:text-amber-600"
           >
             <LogOut className="h-5 w-5" />
             <span>Logout</span>
