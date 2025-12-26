@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 
-import { verifyToken } from "@/lib/helpers/auth.backend";
+import { getMe } from "@/lib/helpers/auth.backend";
 import { logoutUser } from "@/lib/helpers/auth.backend";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -31,24 +31,41 @@ export default function Navbar() {
   const [user, setUser] = useState<null | { name: string; email: string }>(
     null
   );
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-  // 🔥 Check login state saat navbar dirender
   useEffect(() => {
-    async function fetchUser() {
-      const res = await verifyToken();
+    let mounted = true;
 
-      if (res.loggedIn) {
+    const fetchUser = async () => {
+      const res = await getMe();
+
+      if (!mounted) return;
+
+      if (res.success) {
         setUser(res.user);
       } else {
         setUser(null);
       }
-    }
+
+      setLoading(false);
+    };
 
     fetchUser();
+
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // 🔥 Logout handler
+  if (loading) {
+    return (
+      <header className="h-20 bg-white border-b flex items-center px-6">
+        <div className="animate-pulse h-8 w-32 bg-gray-200 rounded" />
+      </header>
+    );
+  }
+
   async function handleLogout() {
     const res = await logoutUser();
     if (res.success) {
@@ -63,7 +80,7 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
-      <div className="container mx-auto">
+      <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
           {/* LEFT — LOGO + CATEGORY */}
           <div className="flex items-center gap-6">
@@ -144,7 +161,10 @@ export default function Navbar() {
                   <DropdownMenuItem onClick={() => router.push("/userProfile")}>
                     Profile
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleLogout} className="text-red-500">
+                  <DropdownMenuItem
+                    onClick={handleLogout}
+                    className="text-red-500"
+                  >
                     Logout
                   </DropdownMenuItem>
                 </DropdownMenuContent>

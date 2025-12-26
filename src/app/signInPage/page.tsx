@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signInSchema, SignInValues } from "@/lib/validations/auth";
+import { supabase } from "@/lib/supabase/client";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -166,15 +167,26 @@ export default function SignInPage() {
               <div className="h-px flex-1 bg-muted-foreground/20" />
             </div>
 
-            {/* Google Login */}
             <Button
               type="button"
               variant="outline"
               className="w-full flex items-center justify-center gap-2"
-              onClick={() => toast("Google login is coming soon")}
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+
+                if (error) {
+                  toast.error("Gagal login dengan Google");
+                  console.error(error);
+                }
+              }}
             >
               <Image
-                src="/google-icon.png"
+                src="/images/Google.svg"
                 alt="Google"
                 width={20}
                 height={20}
