@@ -7,6 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase/client";
 import { signupSchema, SignUpValues } from "@/lib/validations/auth";
 import { signUpUser } from "@/lib/helpers/auth.backend";
 
@@ -172,9 +173,22 @@ export default function SignUpPage() {
               type="button"
               variant="outline"
               className="w-full flex items-center justify-center gap-2"
+              onClick={async () => {
+                const { error } = await supabase.auth.signInWithOAuth({
+                  provider: "google",
+                  options: {
+                    redirectTo: `${window.location.origin}/auth/callback`,
+                  },
+                });
+
+                if (error) {
+                  toast.error("Gagal login dengan Google");
+                  console.error(error);
+                }
+              }}
             >
               <Image
-                src="/google-icon.png"
+                src="/images/Google.svg"
                 alt="Google"
                 width={20}
                 height={20}
@@ -185,10 +199,11 @@ export default function SignUpPage() {
             {/* Link to login */}
             <p className="text-center text-sm text-muted-foreground mt-2">
               Already have an account?{" "}
-              <Link
-                href="/signInPage"
-              >
-                <span className="font-medium text-amber-500 hover:text-amber-600 hover:underline">Sign In</span> here
+              <Link href="/signInPage">
+                <span className="font-medium text-amber-500 hover:text-amber-600 hover:underline">
+                  Sign In
+                </span>{" "}
+                here
               </Link>
             </p>
 

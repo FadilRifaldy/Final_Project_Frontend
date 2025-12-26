@@ -1,4 +1,5 @@
 import axios, { AxiosError } from "axios";
+import { IUser } from "@/types/user";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -418,3 +419,39 @@ export const uploadToCloudinary = async (
     throw new Error("Terjadi kesalahan tidak terduga saat upload");
   }
 };
+
+export async function socialLogin(accessToken: string): Promise<{
+  success: boolean;
+  message?: string;
+  user?: IUser;
+}> {
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/social-login`,
+      { accessToken },
+      {
+        withCredentials: true,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+
+    return {
+      success: true,
+      user: data.user as IUser,
+    };
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return {
+        success: false,
+        message:
+          error.response?.data?.message ??
+          "Login Google gagal",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Terjadi kesalahan tidak terduga",
+    };
+  }
+}

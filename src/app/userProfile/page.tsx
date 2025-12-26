@@ -160,17 +160,14 @@ export default function UserProfilePage() {
       setUploading(true);
       setUploadProgress(0);
 
-      // 1. ambil signature dari BE
       const signature = await getCloudinarySignature();
 
-      // 2. upload ke cloudinary
       const imageUrl = await uploadToCloudinary(
         avatarFile,
         signature,
         setUploadProgress
       );
 
-      // 3. update ke backend (simpan URL avatar)
       const res = await updateProfile({
         name: user.name,
         email: user.email,
@@ -279,6 +276,7 @@ export default function UserProfilePage() {
                 Email
               </Label>
               <Input
+                disabled={user.provider === "GOOGLE"}
                 value={user.email}
                 onChange={(e) => {
                   const newEmail = e.target.value;
@@ -353,6 +351,7 @@ export default function UserProfilePage() {
             </p>
 
             <Button
+              disabled={user.provider === "GOOGLE"}
               variant="outline"
               onClick={() => router.push("/reset-password?mode=change")}
             >

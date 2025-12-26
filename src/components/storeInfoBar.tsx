@@ -21,25 +21,31 @@ export default function StoreInfoBar({ storeName = "FreshMart East" }) {
   */
 
   return (
-    <div className="w-full border-b bg-muted/40 py-3">
-      <div className="container mx-auto flex items-center justify-center text-sm text-foreground">
-        {/* LEFT: User Location */}
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <LocateFixed className="w-4 h-4 text-blue-600" />
-          <span>{userLocation}</span>
-        </div>
-
-        {/* CENTER: Divider (optional, bisa dihapus jika tidak mau) */}
-        <div className="hidden md:block w-px h-5 bg-border mx-4"></div>
-
-        {/* RIGHT: Nearest Store Info */}
-        <div className="flex items-center gap-2">
-          <CheckCircle className="w-4 h-4 text-green-600" />
-          <span className="text-muted-foreground">Showing products from</span>
-          <div className="flex items-center gap-1 font-medium text-green-700">
-            <MapPin className="w-4 h-4" />
-            <span>{storeName}</span>
+    <div className="sticky top-20 z-40 w-full border-b bg-muted/80 backdrop-blur">
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex flex-col gap-2 text-sm text-foreground md:flex-row md:items-center md:justify-center">
+          
+          {/* User Location */}
+          <div className="flex items-center justify-center gap-2 text-muted-foreground md:justify-start">
+            <LocateFixed className="h-4 w-4 text-blue-600" />
+            <span className="truncate">{userLocation}</span>
           </div>
+
+          {/* Divider */}
+          <div className="hidden h-5 w-px bg-border md:block md:mx-4" />
+
+          {/* Store Info */}
+          <div className="flex items-center justify-center gap-2">
+            <CheckCircle className="h-4 w-4 text-green-600" />
+            <span className="text-muted-foreground hidden sm:inline">
+              Showing products from
+            </span>
+            <div className="flex items-center gap-1 font-medium text-green-700">
+              <MapPin className="h-4 w-4" />
+              <span className="truncate">{storeName}</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
