@@ -1,15 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { IProduct } from "@/types/product";
+import { Search, X, Loader2 } from "lucide-react";
 import { useProductStore } from "@/lib/store/productStore";
 import { useCategoryStore } from "@/lib/store/categoryStore";
 import { ProductTable } from "@/components/products/ProductTable";
 import { ProductDialog } from "@/components/products/ProductDialog";
 import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
+import { VariantManagementPanel } from "@/components/products/VariantManagementPanel";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -30,6 +35,16 @@ export default function ProductsPage() {
   // Local loading state for dialog
   const [isSaving, setIsSaving] = useState(false);
 
+  // Filter state
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+
+  // Variant panel state
+  const [selectedProductForVariants, setSelectedProductForVariants] = useState<IProduct | null>(null);
+  const [isVariantPanelOpen, setIsVariantPanelOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
   // Ambil data dan functions dari Zustand stores
   const {
     products,
@@ -49,6 +64,39 @@ export default function ProductsPage() {
     fetchProducts();
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Filter products by category and search
+  const filteredProducts = products.filter(product => {
+    // Filter by category
+    const matchesCategory = selectedCategoryFilter === "all" || product.categoryId === selectedCategoryFilter;
+
+    // Filter by search query (name only)
+    const matchesSearch = debouncedSearch === "" ||
+      product.name.toLowerCase().includes(debouncedSearch.toLowerCase());
+
+    return matchesCategory && matchesSearch;
+  });
 
   // Handler untuk create button
   const handleCreate = () => {
@@ -78,9 +126,10 @@ export default function ProductsPage() {
     setDeleteDialogOpen(true);
   };
 
-  // Handler untuk manage variants button
+  // Handler untuk manage variants - Open split view panel
   const handleManageVariants = (product: IProduct) => {
-    router.push(`/products/variants?productId=${product.id}`);
+    setSelectedProductForVariants(product);
+    setIsVariantPanelOpen(true);
   };
 
   // Konfirmasi delete
@@ -159,15 +208,75 @@ export default function ProductsPage() {
 
   return (
     <div className="container mx-auto p-4">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Product Management</h1>
+      {/* Header */}
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Products</h1>
+          <p className="text-gray-600 text-sm">Kelola semua produk Anda</p>
+        </div>
         {currentRole === "SUPER_ADMIN" && (
-          <Button onClick={handleCreate}>Add Product</Button>
+          <Button onClick={handleCreate}>+ Create Product</Button>
+        )}
+      </div>
+
+      {/* Filter Section */}
+      <div className="mb-4 flex flex-wrap gap-4 items-center">
+        {/* Search Bar */}
+        <div className="relative w-64">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Search by name..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 pr-10"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+            >
+              <X className="h-4 w-4" />
+            </button>
+          )}
+        </div>
+
+        {/* Category Filter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Category:</label>
+          <select
+            value={selectedCategoryFilter}
+            onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+            className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+          >
+            <option value="all">All Categories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Clear Category Filter Button */}
+        {selectedCategoryFilter !== "all" && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedCategoryFilter("all")}
+          >
+            Clear Filter
+          </Button>
         )}
       </div>
 
       {/* Loading state */}
-      {loading && <p className="text-muted-foreground">Loading...</p>}
+      {loading && (
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin" />
+          <span>Loading products...</span>
+        </div>
+      )}
 
       {/* Error state */}
       {error && (
@@ -177,15 +286,65 @@ export default function ProductsPage() {
       )}
 
       {/* Product Table */}
-      <ProductTable
-        products={products}
-        categories={categories}
-        loading={loading}
-        currentRole={currentRole}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onManageVariants={handleManageVariants}
-      />
+      <div className="flex gap-4">
+        {/* Product Table Section */}
+        <div className={cn(
+          "transition-all duration-300",
+          isVariantPanelOpen ? "w-full md:w-[65%]" : "w-full"
+        )}>
+          <ProductTable
+            products={filteredProducts}
+            categories={categories}
+            loading={loading}
+            currentRole={currentRole}
+            onEdit={handleEdit}
+            onDelete={handleDelete}
+            onManageVariants={handleManageVariants}
+          />
+        </div>
+
+        {/* Variant Panel - Desktop (Placeholder for now) */}
+        {isVariantPanelOpen && (
+          <div className="hidden md:block w-[35%] transition-all duration-300">
+            <div className="border-2 border-gray-200 rounded-lg p-6 bg-gradient-to-br from-gray-50 to-white shadow-md sticky top-4">
+              <div className="flex justify-between items-start mb-4 pb-3 border-b border-gray-200">
+                <div className="flex-1 pr-2">
+                  <h3 className="font-semibold text-lg">{selectedProductForVariants?.name}</h3>
+                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                    {selectedProductForVariants?.description}
+                  </p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsVariantPanelOpen(false)}
+                  className="hover:bg-gray-200 flex-shrink-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+              <VariantManagementPanel product={selectedProductForVariants} />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Variant Panel - Mobile (Full-screen Sheet) */}
+      {isMobile && (
+        <Sheet open={isVariantPanelOpen} onOpenChange={setIsVariantPanelOpen}>
+          <SheetContent side="bottom" className="h-[90vh]">
+            <SheetHeader>
+              <SheetTitle>{selectedProductForVariants?.name}</SheetTitle>
+              <p className="text-xs text-gray-500 mt-1">
+                {selectedProductForVariants?.description}
+              </p>
+            </SheetHeader>
+            <div className="mt-6">
+              <VariantManagementPanel product={selectedProductForVariants} />
+            </div>
+          </SheetContent>
+        </Sheet>
+      )}
 
       {/* Create/Edit Dialog */}
       <ProductDialog

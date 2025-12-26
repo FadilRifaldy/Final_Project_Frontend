@@ -26,8 +26,8 @@ export function ProductTable({
         <Table>
             <TableHeader>
                 <TableRow>
+                    <TableHead>Image</TableHead>
                     <TableHead>Name</TableHead>
-                    <TableHead>Description</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Actions</TableHead>
                 </TableRow>
@@ -50,10 +50,21 @@ export function ProductTable({
 
                         return (
                             <TableRow key={product.id}>
-                                <TableCell className="font-medium">{product.name}</TableCell>
-                                <TableCell className="max-w-xs truncate">
-                                    {product.description}
+                                {/* Product Image Thumbnail */}
+                                <TableCell>
+                                    <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                        {product.images && product.images.length > 0 ? (
+                                            <img
+                                                src={product.images[0].imageUrl}
+                                                alt={product.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <span className="text-xs text-gray-400">No image</span>
+                                        )}
+                                    </div>
                                 </TableCell>
+                                <TableCell className="font-medium">{product.name}</TableCell>
                                 <TableCell>{category?.name || "-"}</TableCell>
                                 <TableCell>
                                     {currentRole === "SUPER_ADMIN" && (
