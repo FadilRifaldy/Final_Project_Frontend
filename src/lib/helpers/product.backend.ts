@@ -2,10 +2,33 @@ import axios from "axios";
 import api from "../api/axios";
 import { IProduct, IProductImage } from "@/types/product";
 
-export default async function getProducts(): Promise<IProduct[]> {
+// Pagination response type
+interface PaginationMeta {
+  page: number;
+  limit: number;
+  totalItems: number;
+  totalPages: number;
+  hasNext: boolean;
+  hasPrev: boolean;
+}
+
+interface ProductsResponse {
+  data: IProduct[];
+  pagination: PaginationMeta;
+}
+
+export default async function getProducts(
+  page: number = 1,
+  limit: number = 10
+): Promise<ProductsResponse> {
   try {
-    const response = await api.get("/api/products");
-    return response.data.data;
+    const response = await api.get("/api/products", {
+      params: { page, limit }
+    });
+    return {
+      data: response.data.data,
+      pagination: response.data.pagination
+    };
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const message = error.response?.data?.message || "Failed to get products";
