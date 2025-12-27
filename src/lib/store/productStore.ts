@@ -12,8 +12,14 @@ interface ProductState {
   loading: boolean;
   error: string | null;
 
+  // Server-side pagination state
+  currentPage: number;
+  itemsPerPage: number;
+  totalItems: number;      // From backend
+  totalPages: number;      // From backend
+
   // Actions
-  fetchProducts: () => Promise<void>;
+  fetchProducts: (page?: number, limit?: number) => Promise<void>;
   addProduct: (
     name: string,
     description: string,
@@ -30,19 +36,43 @@ interface ProductState {
   ) => Promise<void>;
   deleteProduct: (id: string) => Promise<void>;
   uploadProductImages: (productId: string, files: File[]) => Promise<void>;
+
+  // Pagination actions
+  setPage: (page: number) => void;
+  nextPage: () => void;
+  prevPage: () => void;
+  setItemsPerPage: (count: number) => void;
+  resetPagination: () => void;
 }
 
-export const useProductStore = create<ProductState>((set) => ({
+export const useProductStore = create<ProductState>((set, get) => ({
   products: [],
   loading: false,
   error: null,
 
-  fetchProducts: async () => {
+  // Server-side pagination initial state
+  currentPage: 1,
+  itemsPerPage: 10,
+  totalItems: 0,
+  totalPages: 0,
+
+  fetchProducts: async (page?: number, limit?: number) => {
     set({ loading: true, error: null });
 
+    const state = get();
+    const currentPage = page || state.currentPage;
+    const currentLimit = limit || state.itemsPerPage;
+
     try {
-      const products = await getProducts();
-      set({ products: products, loading: false });
+      const result = await getProducts(currentPage, currentLimit);
+      set({
+        products: result.data,
+        currentPage: result.pagination.page,
+        itemsPerPage: result.pagination.limit,
+        totalItems: result.pagination.totalItems,
+        totalPages: result.pagination.totalPages,
+        loading: false
+      });
     } catch (error: unknown) {
       const message =
         error instanceof Error ? error.message : "Failed to fetch products";
@@ -161,5 +191,35 @@ export const useProductStore = create<ProductState>((set) => ({
         loading: false,
       });
     }
+  },
+
+  // Server-side pagination actions implementation
+  setPage: (page: number) => {
+    const state = get();
+    state.fetchProducts(page, state.itemsPerPage);
+  },
+
+  nextPage: () => {
+    const state = get();
+    if (state.currentPage < state.totalPages) {
+      state.fetchProducts(state.currentPage + 1, state.itemsPerPage);
+    }
+  },
+
+  prevPage: () => {
+    const state = get();
+    if (state.currentPage > 1) {
+      state.fetchProducts(state.currentPage - 1, state.itemsPerPage);
+    }
+  },
+
+  setItemsPerPage: (count: number) => {
+    const state = get();
+    state.fetchProducts(1, count); // Fetch page 1 with new limit
+  },
+
+  resetPagination: () => {
+    const state = get();
+    state.fetchProducts(1, state.itemsPerPage);
   },
 }));

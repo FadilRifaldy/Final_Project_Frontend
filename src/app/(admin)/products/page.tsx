@@ -35,7 +35,7 @@ export default function ProductsPage() {
   // Local loading state for dialog
   const [isSaving, setIsSaving] = useState(false);
 
-  // Filter state
+  // Search state
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [debouncedSearch, setDebouncedSearch] = useState<string>("");
@@ -55,6 +55,11 @@ export default function ProductsPage() {
     updateProduct,
     deleteProduct,
     uploadProductImages,
+    currentPage,
+    itemsPerPage,
+    totalItems,
+    totalPages,
+    setPage,
   } = useProductStore();
 
   const { categories, fetchCategories } = useCategoryStore();
@@ -86,7 +91,7 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // Filter products by category and search
+  // Filter products by category and search (client-side filtering on current page)
   const filteredProducts = products.filter(product => {
     // Filter by category
     const matchesCategory = selectedCategoryFilter === "all" || product.categoryId === selectedCategoryFilter;
@@ -97,6 +102,20 @@ export default function ProductsPage() {
 
     return matchesCategory && matchesSearch;
   });
+
+  // For server-side pagination, we use products directly (already paginated by backend)
+  // But we still apply client-side filters for category and search
+  // TODO: Move filters to backend API for better performance
+
+  // Reset to page 1 and fetch when filters change
+  useEffect(() => {
+    fetchProducts(1, itemsPerPage);
+  }, [selectedCategoryFilter, debouncedSearch, fetchProducts, itemsPerPage]);
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setPage(page);
+  };
 
   // Handler untuk create button
   const handleCreate = () => {
@@ -152,8 +171,6 @@ export default function ProductsPage() {
 
         // 2. Upload images if any selected
         if (selectedFiles.length > 0 && newProduct) {
-          // Get the product ID from the newly created product
-          // Since addProduct updates the store, we need to get the latest product
           const latestProducts = products;
           const createdProduct = latestProducts[latestProducts.length - 1];
 
@@ -300,6 +317,10 @@ export default function ProductsPage() {
             onEdit={handleEdit}
             onDelete={handleDelete}
             onManageVariants={handleManageVariants}
+            currentPage={currentPage}
+            totalPages={totalPages}
+            totalItems={totalItems}
+            onPageChange={handlePageChange}
           />
         </div>
 
