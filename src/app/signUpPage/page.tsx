@@ -156,7 +156,7 @@ export default function SignUpPage() {
             <Button
               disabled={loading}
               type="submit"
-              className="w-full text-white bg-amber-500 hover:bg-amber-600"
+              className="w-full text-white bg-amber-500 hover:bg-amber-600 cursor-pointer"
             >
               {loading ? "Loading..." : "Sign Up"}
             </Button>
@@ -172,7 +172,7 @@ export default function SignUpPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer"
               onClick={async () => {
                 const { error } = await supabase.auth.signInWithOAuth({
                   provider: "google",
@@ -203,8 +203,8 @@ export default function SignUpPage() {
                 <span className="font-medium text-amber-500 hover:text-amber-600 hover:underline">
                   Sign In
                 </span>{" "}
-                here
               </Link>
+              here
             </p>
 
             {/* Back */}
