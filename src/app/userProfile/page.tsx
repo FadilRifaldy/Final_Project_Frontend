@@ -24,7 +24,10 @@ import {
   Lock,
   Image as ImageIcon,
   ShieldCheck,
+  Smartphone,
+  MailWarning,
 } from "lucide-react";
+import AddressList from "@/components/address/address-list";
 
 export default function UserProfilePage() {
   const router = useRouter();
@@ -233,17 +236,18 @@ export default function UserProfilePage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <ImageIcon className="w-4 h-4" />
-                Foto Profil
+                Profile Picture
               </Label>
 
               <Input
+                className="cursor-pointer"
                 type="file"
                 accept=".jpg,.jpeg,.png,.gif"
                 onChange={handleAvatarChange}
                 disabled={uploading}
               />
               <p className="text-xs text-muted-foreground">
-                Format: JPG, JPEG, PNG, GIF • Maksimal 1MB
+                Supported formats: JPG, JPEG, PNG, GIF · Max size: 1 MB
               </p>
 
               {avatarFile && (
@@ -262,9 +266,10 @@ export default function UserProfilePage() {
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <User className="w-4 h-4" />
-                Nama
+                Name
               </Label>
               <Input
+                placeholder="Enter your full name"
                 value={user.name}
                 onChange={(e) => setUser({ ...user, name: e.target.value })}
               />
@@ -287,46 +292,54 @@ export default function UserProfilePage() {
             </div>
           </div>
 
+          {emailChanged && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-700">
+              <MailWarning className="h-4 w-4 mt-0.5 flex-shrink-0" />
+              <p>
+                Changing your email will require re-verification and a new
+                login.
+              </p>
+            </div>
+          )}
+
           <div className="space-y-2">
-            <Label className="flex items-center gap-2">📞 Nomor Telepon</Label>
+            <Label className="flex items-center gap-2">
+              <Smartphone className="w-4 h-4" />
+              Phone Number
+            </Label>
             <Input
-              placeholder="08xxxxxxxxxx"
+              placeholder="e.g. +62 8xxxxxxxxxx"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
             />
           </div>
 
-          {emailChanged && (
-            <div className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-700">
-              ⚠️ Mengubah email akan membuat akun perlu diverifikasi ulang dan
-              kamu harus login kembali.
-            </div>
-          )}
-
           <div className="flex items-center justify-between p-4 rounded-xl border">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-muted-foreground" />
               <span className="text-sm">
-                Status Email:{" "}
-                {user.isVerified ? "Terverifikasi" : "Belum Terverifikasi"}
+                Email Status: {user.isVerified ? "Verified" : "Unverified"}
               </span>
             </div>
 
             {!user.isVerified && (
               <Button
+                className="cursor-pointer"
                 variant="outline"
                 size="sm"
                 disabled={sendingVerify}
                 onClick={handleSendVerifyEmail}
               >
                 {sendingVerify
-                  ? "Mengirim..."
+                  ? "Sending..."
                   : emailChanged
-                  ? "Kirim Ulang Email Verifikasi"
-                  : "Kirim Email Verifikasi"}
+                  ? "Resend Verification Email"
+                  : "Send Verification Email"}
               </Button>
             )}
           </div>
+
+          <AddressList />
 
           <div className="p-4 rounded-xl border bg-muted/40">
             <div className="flex items-center justify-between">
@@ -336,35 +349,44 @@ export default function UserProfilePage() {
               </span>
             </div>
             <p className="text-xs text-muted-foreground mt-2">
-              Bagikan kode ini ke teman untuk mendapatkan reward 🎁
+              Share this code with friends to earn rewards
             </p>
           </div>
 
           <div className="space-y-3">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <Lock className="w-4 h-4" />
-              Keamanan Akun
+              Account Security
             </h3>
 
             <p className="text-sm text-muted-foreground">
-              Untuk keamanan akun, perubahan password dilakukan melalui email.
+              For security reasons, password changes are handled via email.
             </p>
 
             <Button
+              className="cursor-pointer"
               disabled={user.provider === "GOOGLE"}
               variant="outline"
               onClick={() => router.push("/reset-password?mode=change")}
             >
-              Ganti Password
+              Change Password
             </Button>
           </div>
 
           <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={handleCancel}>
-              Batal
+            <Button
+              className="cursor-pointer"
+              variant="outline"
+              onClick={handleCancel}
+            >
+              Cancel
             </Button>
-            <Button onClick={handleSaveProfile} disabled={loading}>
-              {loading ? "Menyimpan..." : "Simpan Perubahan"}
+            <Button
+              className="cursor-pointer"
+              onClick={handleSaveProfile}
+              disabled={loading}
+            >
+              {loading ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </CardContent>

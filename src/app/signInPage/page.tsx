@@ -144,6 +144,7 @@ export default function SignInPage() {
               </div>
 
               <Button
+                className="cursor-pointer"
                 variant="link"
                 onClick={() => router.push("/reset-password?mode=reset")}
               >
@@ -155,7 +156,7 @@ export default function SignInPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full text-white bg-amber-500 hover:bg-amber-600"
+              className="w-full text-white bg-amber-500 hover:bg-amber-600 cursor-pointer"
             >
               {loading ? "Loading..." : "Masuk"}
             </Button>
@@ -170,7 +171,7 @@ export default function SignInPage() {
             <Button
               type="button"
               variant="outline"
-              className="w-full flex items-center justify-center gap-2"
+              className="w-full flex items-center justify-center gap-2 cursor-pointer"
               onClick={async () => {
                 const { error } = await supabase.auth.signInWithOAuth({
                   provider: "google",
@@ -201,8 +202,8 @@ export default function SignInPage() {
                 <span className="text-amber-500 hover:text-amber-600 font-medium hover:underline">
                   Sign Up
                 </span>{" "}
-                here
               </Link>
+              here
             </p>
 
             {/* Back */}
