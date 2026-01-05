@@ -41,24 +41,24 @@ const dummyProducts = [
 export function ProductListMock() {
   return (
     <section id="products" className="py-12 md:py-16">
-  <div className="max-w-7xl mx-auto px-4 space-y-8">
-    {/* Header */}
-    <div>
-      <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-        Fresh Products
-      </h2>
-      <p className="text-muted-foreground mt-1">
-        Discover our selection of fresh groceries
-      </p>
-    </div>
+      <div className="max-w-7xl mx-auto px-4 space-y-8">
+        {/* Header */}
+        <div>
+          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
+            Fresh Products
+          </h2>
+          <p className="text-muted-foreground mt-1">
+            Discover our selection of fresh groceries
+          </p>
+        </div>
 
-    {/* Products Grid */}
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-      {dummyProducts.map((product) => (
-        <ProductCardMock key={product.id} product={product} />
-      ))}
-    </div>
-  </div>
-</section>
+        {/* Products Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+          {dummyProducts.map((product) => (
+            <ProductCardMock key={product.id} product={product} />
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }

@@ -25,7 +25,7 @@ export default function DashboardPage() {
   }, []);
 
   useEffect(() => {
-    if (role === "USER") {
+    if (role === "CUSTOMER") {
       router.push("/");
     }
   }, [role]);

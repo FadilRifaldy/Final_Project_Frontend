@@ -14,7 +14,6 @@ import { ProductDialog } from "@/components/products/ProductDialog";
 import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
 import { VariantManagementPanel } from "@/components/products/VariantManagementPanel";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -43,7 +42,6 @@ export default function ProductsPage() {
   // Variant panel state
   const [selectedProductForVariants, setSelectedProductForVariants] = useState<IProduct | null>(null);
   const [isVariantPanelOpen, setIsVariantPanelOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
 
   // Ambil data dan functions dari Zustand stores
   const {
@@ -70,17 +68,7 @@ export default function ProductsPage() {
     fetchCategories();
   }, [fetchProducts, fetchCategories]);
 
-  // Detect mobile screen size
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
 
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Debounce search query
   useEffect(() => {
@@ -229,7 +217,7 @@ export default function ProductsPage() {
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-2xl font-bold">Products</h1>
-          <p className="text-gray-600 text-sm">Kelola semua produk Anda</p>
+          <p className="text-gray-600 text-sm">Kelola semua produk perusahaan</p>
         </div>
         {currentRole === "SUPER_ADMIN" && (
           <Button onClick={handleCreate}>+ Create Product</Button>
@@ -303,69 +291,34 @@ export default function ProductsPage() {
       )}
 
       {/* Product Table */}
-      <div className="flex gap-4">
-        {/* Product Table Section */}
-        <div className={cn(
-          "transition-all duration-300",
-          isVariantPanelOpen ? "w-full md:w-[65%]" : "w-full"
-        )}>
-          <ProductTable
-            products={filteredProducts}
-            categories={categories}
-            loading={loading}
-            currentRole={currentRole}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-            onManageVariants={handleManageVariants}
-            currentPage={currentPage}
-            totalPages={totalPages}
-            totalItems={totalItems}
-            onPageChange={handlePageChange}
-          />
-        </div>
+      <ProductTable
+        products={filteredProducts}
+        categories={categories}
+        loading={loading}
+        currentRole={currentRole}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onManageVariants={handleManageVariants}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        totalItems={totalItems}
+        onPageChange={handlePageChange}
+      />
 
-        {/* Variant Panel - Desktop (Placeholder for now) */}
-        {isVariantPanelOpen && (
-          <div className="hidden md:block w-[35%] transition-all duration-300">
-            <div className="border-2 border-gray-200 rounded-lg p-6 bg-gradient-to-br from-gray-50 to-white shadow-md sticky top-4">
-              <div className="flex justify-between items-start mb-4 pb-3 border-b border-gray-200">
-                <div className="flex-1 pr-2">
-                  <h3 className="font-semibold text-lg">{selectedProductForVariants?.name}</h3>
-                  <p className="text-xs text-gray-500 mt-1 line-clamp-2">
-                    {selectedProductForVariants?.description}
-                  </p>
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setIsVariantPanelOpen(false)}
-                  className="hover:bg-gray-200 flex-shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-              <VariantManagementPanel product={selectedProductForVariants} />
-            </div>
+      {/* Variant Panel */}
+      <Sheet open={isVariantPanelOpen} onOpenChange={setIsVariantPanelOpen}>
+        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle>{selectedProductForVariants?.name}</SheetTitle>
+            <p className="text-sm text-gray-500 mt-1">
+              {selectedProductForVariants?.description}
+            </p>
+          </SheetHeader>
+          <div className="mt-6">
+            <VariantManagementPanel product={selectedProductForVariants} />
           </div>
-        )}
-      </div>
-
-      {/* Variant Panel - Mobile (Full-screen Sheet) */}
-      {isMobile && (
-        <Sheet open={isVariantPanelOpen} onOpenChange={setIsVariantPanelOpen}>
-          <SheetContent side="bottom" className="h-[90vh]">
-            <SheetHeader>
-              <SheetTitle>{selectedProductForVariants?.name}</SheetTitle>
-              <p className="text-xs text-gray-500 mt-1">
-                {selectedProductForVariants?.description}
-              </p>
-            </SheetHeader>
-            <div className="mt-6">
-              <VariantManagementPanel product={selectedProductForVariants} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      )}
+        </SheetContent>
+      </Sheet>
 
       {/* Create/Edit Dialog */}
       <ProductDialog
