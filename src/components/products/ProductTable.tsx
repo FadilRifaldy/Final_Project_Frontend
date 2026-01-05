@@ -2,6 +2,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { Button } from "../ui/button"
 import { IProduct } from "@/types/product"
 import { ICategory } from "@/types/category"
+import { useEffect, useState } from "react"
+import { useRouter } from "next/navigation"
+import axios from "axios"
 
 interface ProductTableProps {
     products: IProduct[];
@@ -32,151 +35,176 @@ export function ProductTable({
     totalItems,
     onPageChange
 }: ProductTableProps) {
-    return (
-        <div className="mx-auto max-w-6xl max-h-[calc(100vh-250px)] border border-gray-200 rounded-xl p-4 overflow-auto">
-            <Table className="mx-auto">
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Image</TableHead>
-                        <TableHead>Name</TableHead>
-                        <TableHead>Category</TableHead>
-                        <TableHead>Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {products.length === 0 && !loading ? (
+    const [role, setRole] = useState<string>("");
+    const router = useRouter();
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            try {
+                const response = await axios.get(
+                    "http://localhost:8800/auth/dashboard",
+                    { withCredentials: true }
+                );
+                const userData = response.data.user;
+                setRole(userData.role);
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
+        };
+        fetchUserData();
+    }, []);
+
+    if (role === "CUSTOMER" || role === "") {
+        return (
+            <p className="text-center p-10">Unauthorized Access</p>
+        );
+    } else {
+        return (
+            <div className="mx-auto max-w-6xl max-h-[calc(100vh-250px)] border border-gray-200 rounded-xl p-4 overflow-auto shadow-2xl">
+                <Table className="mx-auto">
+                    <TableHeader>
                         <TableRow>
-                            <TableCell
-                                colSpan={4}
-                                className="text-center text-muted-foreground"
-                            >
-                                No products found
-                            </TableCell>
+                            <TableHead>Image</TableHead>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Category</TableHead>
+                            <TableHead>Actions</TableHead>
                         </TableRow>
-                    ) : (
-                        products.map((product: IProduct) => {
-                            const category = categories.find(
-                                (cat) => cat.id === product.categoryId
-                            );
-
-                            return (
-                                <TableRow key={product.id}>
-                                    {/* Product Image Thumbnail */}
-                                    <TableCell>
-                                        <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
-                                            {product.images && product.images.length > 0 ? (
-                                                <img
-                                                    src={product.images[0].imageUrl}
-                                                    alt={product.name}
-                                                    className="w-full h-full object-cover"
-                                                />
-                                            ) : (
-                                                <span className="text-xs text-gray-400">No image</span>
-                                            )}
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="font-medium">{product.name}</TableCell>
-                                    <TableCell>{category?.name || "-"}</TableCell>
-                                    <TableCell>
-                                        {currentRole === "SUPER_ADMIN" && (
-                                            <div className="flex gap-2">
-                                                <Button
-                                                    variant="outline"
-                                                    size="sm"
-                                                    className="transition-all hover:scale-105 hover:shadow-md"
-                                                    onClick={() => onEdit(product)}
-                                                >
-                                                    Edit
-                                                </Button>
-                                                <Button
-                                                    variant="secondary"
-                                                    size="sm"
-                                                    className="transition-all hover:scale-105 hover:shadow-md"
-                                                    onClick={() => onManageVariants(product)}
-                                                >
-                                                    Variants
-                                                </Button>
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    className="transition-all hover:scale-105 hover:shadow-md"
-                                                    onClick={() => onDelete(product)}
-                                                >
-                                                    Delete
-                                                </Button>
-                                            </div>
-                                        )}
-                                    </TableCell>
-                                </TableRow>
-                            );
-                        })
-                    )}
-                </TableBody>
-            </Table>
-
-            {/* Pagination Controls */}
-            {totalPages > 1 && (
-                <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
-                    {/* Pagination Info */}
-                    <div className="text-sm text-gray-600">
-                        Showing {products.length > 0 ? ((currentPage - 1) * 10) + 1 : 0} - {Math.min(currentPage * 10, totalItems)} of {totalItems} products
-                    </div>
-
-                    {/* Pagination Buttons */}
-                    <div className="flex items-center gap-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onPageChange(currentPage - 1)}
-                            disabled={currentPage === 1}
-                            className="transition-all hover:scale-105"
-                        >
-                            Previous
-                        </Button>
-
-                        {/* Page Numbers */}
-                        <div className="flex items-center gap-1">
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                                // Show first page, last page, current page, and pages around current
-                                const showPage =
-                                    page === 1 ||
-                                    page === totalPages ||
-                                    (page >= currentPage - 1 && page <= currentPage + 1);
-
-                                if (!showPage) {
-                                    // Show ellipsis
-                                    if (page === currentPage - 2 || page === currentPage + 2) {
-                                        return <span key={page} className="px-2 text-gray-400">...</span>;
-                                    }
-                                    return null;
-                                }
+                    </TableHeader>
+                    <TableBody>
+                        {products.length === 0 && !loading ? (
+                            <TableRow>
+                                <TableCell
+                                    colSpan={4}
+                                    className="text-center text-muted-foreground"
+                                >
+                                    No products found
+                                </TableCell>
+                            </TableRow>
+                        ) : (
+                            products.map((product: IProduct) => {
+                                const category = categories.find(
+                                    (cat) => cat.id === product.categoryId
+                                );
 
                                 return (
-                                    <Button
-                                        key={page}
-                                        variant={currentPage === page ? "default" : "outline"}
-                                        size="sm"
-                                        onClick={() => onPageChange(page)}
-                                        className="min-w-[40px] transition-all hover:scale-105"
-                                    >
-                                        {page}
-                                    </Button>
+                                    <TableRow key={product.id}>
+                                        {/* Product Image Thumbnail */}
+                                        <TableCell>
+                                            <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex items-center justify-center">
+                                                {product.images && product.images.length > 0 ? (
+                                                    <img
+                                                        src={product.images[0].imageUrl}
+                                                        alt={product.name}
+                                                        className="w-full h-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <span className="text-xs text-gray-400">No image</span>
+                                                )}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="font-medium">{product.name}</TableCell>
+                                        <TableCell>{category?.name || "-"}</TableCell>
+                                        <TableCell>
+                                            {currentRole === "SUPER_ADMIN" && (
+                                                <div className="flex gap-2">
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="transition-all hover:scale-105 hover:shadow-md"
+                                                        onClick={() => onEdit(product)}
+                                                    >
+                                                        Edit
+                                                    </Button>
+                                                    <Button
+                                                        variant="secondary"
+                                                        size="sm"
+                                                        className="transition-all hover:scale-105 hover:shadow-md"
+                                                        onClick={() => onManageVariants(product)}
+                                                    >
+                                                        Variants
+                                                    </Button>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        className="transition-all hover:scale-105 hover:shadow-md"
+                                                        onClick={() => onDelete(product)}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
                                 );
-                            })}
+                            })
+                        )}
+                    </TableBody>
+                </Table>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                    <div className="mt-4 flex flex-col sm:flex-row items-center justify-between gap-4 px-2">
+                        {/* Pagination Info */}
+                        <div className="text-sm text-gray-600">
+                            Showing {products.length > 0 ? ((currentPage - 1) * 10) + 1 : 0} - {Math.min(currentPage * 10, totalItems)} of {totalItems} products
                         </div>
 
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onPageChange(currentPage + 1)}
-                            disabled={currentPage === totalPages}
-                            className="transition-all hover:scale-105"
-                        >
-                            Next
-                        </Button>
+                        {/* Pagination Buttons */}
+                        <div className="flex items-center gap-2">
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onPageChange(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="transition-all hover:scale-105"
+                            >
+                                Previous
+                            </Button>
+
+                            {/* Page Numbers */}
+                            <div className="flex items-center gap-1">
+                                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                                    // Show first page, last page, current page, and pages around current
+                                    const showPage =
+                                        page === 1 ||
+                                        page === totalPages ||
+                                        (page >= currentPage - 1 && page <= currentPage + 1);
+
+                                    if (!showPage) {
+                                        // Show ellipsis
+                                        if (page === currentPage - 2 || page === currentPage + 2) {
+                                            return <span key={page} className="px-2 text-gray-400">...</span>;
+                                        }
+                                        return null;
+                                    }
+
+                                    return (
+                                        <Button
+                                            key={page}
+                                            variant={currentPage === page ? "default" : "outline"}
+                                            size="sm"
+                                            onClick={() => onPageChange(page)}
+                                            className="min-w-[40px] transition-all hover:scale-105"
+                                        >
+                                            {page}
+                                        </Button>
+                                    );
+                                })}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => onPageChange(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="transition-all hover:scale-105"
+                            >
+                                Next
+                            </Button>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
-    )
+                )}
+            </div>
+        )
+    }
 }

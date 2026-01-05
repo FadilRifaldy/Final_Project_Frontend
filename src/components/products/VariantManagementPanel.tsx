@@ -8,6 +8,11 @@ import { getProductVariant, createProductVariant } from "@/lib/helpers/productVa
 import { VariantDialog } from "./VariantDialog";
 import { toast } from "sonner";
 
+// Helper function untuk format Rupiah
+const formatRupiah = (amount: number): string => {
+    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+};
+
 interface VariantManagementPanelProps {
     product: IProduct | null;
     onClose?: () => void;
@@ -140,36 +145,66 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
                         </Button>
                     </div>
                 ) : (
-                    <div className="space-y-2">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 p-4">
                         {variants.map((variant) => (
                             <div
                                 key={variant.id}
-                                className="border border-gray-200 rounded-lg p-4 hover:border-gray-300 transition-colors"
+                                className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-md transition-all"
                             >
-                                <div className="flex justify-between items-start">
-                                    <div className="flex-1">
-                                        <h4 className="font-medium text-sm">{variant.name}</h4>
-                                        <div className="flex gap-4 mt-2 text-xs text-gray-600">
-                                            {variant.color && (
-                                                <span className="flex items-center gap-1">
-                                                    {variant.color}
-                                                </span>
-                                            )}
-                                            {variant.size && <span>Size: {variant.size}</span>}
-                                            <span>Weight: {variant.weight}g</span>
+                                {/* Thumbnail Image Placeholder */}
+                                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                                    <div className="text-center">
+                                        <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-white/50 flex items-center justify-center">
+                                            <span className="text-2xl text-gray-400">📦</span>
                                         </div>
-                                        <p className="text-sm font-semibold text-primary mt-2">
-                                            Rp {variant.price.toLocaleString('id-ID')}
-                                        </p>
+                                        <p className="text-xs text-gray-500 font-medium">No Image</p>
                                     </div>
-                                    <div className="flex gap-1">
-                                        <Button variant="ghost" size="sm" onClick={() => handleEdit(variant)}>
+                                    {/* Action Buttons - Positioned on top right of image */}
+                                    <div className="absolute top-2 right-2 flex gap-1">
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="h-7 w-7 p-0 bg-white/90 hover:bg-white"
+                                            onClick={() => handleEdit(variant)}
+                                        >
                                             <Pencil className="h-3 w-3" />
                                         </Button>
-                                        <Button variant="ghost" size="sm">
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="h-7 w-7 p-0 bg-white/90 hover:bg-white"
+                                        >
                                             <Trash2 className="h-3 w-3 text-red-500" />
                                         </Button>
                                     </div>
+                                </div>
+
+                                {/* Card Content */}
+                                <div className="p-3">
+                                    <h4 className="font-medium text-sm mb-2 line-clamp-1">{variant.name}</h4>
+
+                                    {/* Variant Details */}
+                                    <div className="flex flex-wrap gap-2 mb-2 text-xs text-gray-600">
+                                        {variant.color && (
+                                            <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gray-100 rounded">
+                                                <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                                                {variant.color}
+                                            </span>
+                                        )}
+                                        {variant.size && (
+                                            <span className="px-2 py-0.5 bg-gray-100 rounded">
+                                                {variant.size}
+                                            </span>
+                                        )}
+                                        <span className="px-2 py-0.5 bg-gray-100 rounded">
+                                            {variant.weight}g
+                                        </span>
+                                    </div>
+
+                                    {/* Price */}
+                                    <p className="text-sm font-semibold text-primary">
+                                        Rp {formatRupiah(variant.price)}
+                                    </p>
                                 </div>
                             </div>
                         ))}
@@ -179,8 +214,8 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
 
             {/* Add Variant Button - Fixed at bottom */}
             {variants.length > 0 && (
-                <div className="border-t border-gray-200 pt-4 mt-4">
-                    <Button className="w-full" onClick={handleCreate}>
+                <div className="flex justify-end border-t border-gray-200 pt-4 mt-4 px-4">
+                    <Button className="w-[20%]" onClick={handleCreate}>
                         <Plus className="h-4 w-4 mr-2" />
                         Add Variant
                     </Button>
