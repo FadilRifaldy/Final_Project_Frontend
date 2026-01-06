@@ -22,6 +22,7 @@ export interface IProductVariant {
     isActive: boolean;
     createdAt: string;
     updatedAt: string;
+    assignedImages?: IProductVariantImage[]; // Images assigned to this variant
 }
 
 export interface ICreateProductVariant {
@@ -48,4 +49,13 @@ export interface IProductImage {
     createdAt: string;
     updatedAt: string;
     order: number;
+}
+
+export interface IProductVariantImage {
+    id: string;
+    productVariantId: string;
+    productImageId: string;
+    isPrimary: boolean;
+    createdAt: string;
+    image: IProductImage;
 }

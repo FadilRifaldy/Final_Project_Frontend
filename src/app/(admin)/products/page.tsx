@@ -134,10 +134,22 @@ export default function ProductsPage() {
   };
 
   // Handler untuk manage variants - Open split view panel
-  const handleManageVariants = (product: IProduct) => {
+  const handleManageVariants = async (product: IProduct) => {
     setSelectedProductForVariants(product);
     setIsVariantPanelOpen(true);
+    // Refresh products in background to get latest images
+    await fetchProducts(currentPage, itemsPerPage);
   };
+
+  // Sync selectedProductForVariants with latest product data after refresh
+  useEffect(() => {
+    if (selectedProductForVariants && isVariantPanelOpen) {
+      const updatedProduct = products.find(p => p.id === selectedProductForVariants.id);
+      if (updatedProduct && updatedProduct.images.length !== selectedProductForVariants.images.length) {
+        setSelectedProductForVariants(updatedProduct);
+      }
+    }
+  }, [products, selectedProductForVariants, isVariantPanelOpen]);
 
   // Konfirmasi delete
   const confirmDelete = () => {
