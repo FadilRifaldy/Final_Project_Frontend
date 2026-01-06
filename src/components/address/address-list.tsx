@@ -4,9 +4,8 @@ import { useEffect, useState } from "react";
 import { AddressCard, Address } from "./address-card";
 import { AddressModal } from "./address-modal";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { MapIcon } from "lucide-react";
+import { MapPin, Plus, Package } from "lucide-react";
 import {
   getAddresses,
   createAddress,
@@ -108,44 +107,80 @@ export default function AddressList() {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <Label className="flex items-center gap-2">
-          <MapIcon className="w-4 h-4" />
-          My Address
-        </Label>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gradient-to-br from-slate-50 to-white rounded-xl border border-slate-200">
+        <div className="flex items-center gap-2">
+          <div className="p-2 bg-primary/10 rounded-lg">
+            <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+          </div>
+          <div className="pl-0.5 sm:pl-1">
+            <h3 className="text-sm sm:text-base font-semibold text-slate-900">
+              My Addresses
+            </h3>
+            <p className="text-xs text-slate-500">
+              {addresses.length} {addresses.length === 1 ? "address" : "addresses"} saved
+            </p>
+          </div>
+        </div>
+
         <Button
-          className="cursor-pointer"
           disabled={loading}
           onClick={() => {
             setSelected(null);
             setOpen(true);
           }}
+          className="w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow text-sm h-9 sm:h-10"
         >
+          <Plus className="mr-1.5 sm:mr-1 h-3.5 w-3.5 sm:h-4 sm:w-4" />
           Add Address
         </Button>
       </div>
 
+      {/* Empty State */}
       {addresses.length === 0 && (
-        <p className="text-sm text-muted-foreground">
-          No address yet. Add an address for delivery.
-        </p>
-      )}
-
-      <div className="space-y-3">
-        {addresses.map((address) => (
-          <AddressCard
-            key={address.id}
-            address={address}
-            onEdit={(addr) => {
-              setSelected(addr);
+        <div className="flex flex-col items-center justify-center py-8 sm:py-12 px-4 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50">
+          <div className="p-3 sm:p-4 bg-slate-100 rounded-full mb-3 sm:mb-4">
+            <Package className="w-6 h-6 sm:w-8 sm:h-8 text-slate-400" />
+          </div>
+          <h4 className="text-sm sm:text-base font-medium text-slate-700 mb-1">
+            No addresses yet
+          </h4>
+          <p className="text-xs sm:text-sm text-slate-500 text-center mb-4">
+            Add your first delivery address to get started
+          </p>
+          <Button
+            size="sm"
+            onClick={() => {
+              setSelected(null);
               setOpen(true);
             }}
-            onDelete={handleDelete}
-            onSetPrimary={handleSetPrimary}
-          />
-        ))}
-      </div>
+            className="shadow-sm"
+          >
+            <Plus className="mr-1.5 h-3.5 w-3.5" />
+            Add First Address
+          </Button>
+        </div>
+      )}
 
+      {/* Address List */}
+      {addresses.length > 0 && (
+        <div className="space-y-3">
+          {addresses.map((address) => (
+            <AddressCard
+              key={address.id}
+              address={address}
+              onEdit={(addr) => {
+                setSelected(addr);
+                setOpen(true);
+              }}
+              onDelete={handleDelete}
+              onSetPrimary={handleSetPrimary}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* Modal */}
       <AddressModal
         key={open ? selected?.id ?? "add-address" : "closed"}
         open={open}
