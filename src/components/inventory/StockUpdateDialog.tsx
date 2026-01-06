@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react';
-import axios from 'axios';
+import api from '@/lib/api/axios';
 import {
     Dialog,
     DialogContent,
@@ -87,10 +87,10 @@ export default function StockUpdateDialog({
 
         try {
             const endpoint = type === 'IN'
-                ? 'http://localhost:8800/api/stock-journal/in'
-                : 'http://localhost:8800/api/stock-journal/out';
+                ? '/api/stock-journal/in'
+                : '/api/stock-journal/out';
 
-            await axios.post(
+            await api.post(
                 endpoint,
                 {
                     storeId,
@@ -99,8 +99,7 @@ export default function StockUpdateDialog({
                     referenceNo: referenceNo.trim(),
                     reason: reason.trim(),
                     notes: notes.trim() || undefined,
-                },
-                { withCredentials: true }
+                }
             );
 
             // Reset form
