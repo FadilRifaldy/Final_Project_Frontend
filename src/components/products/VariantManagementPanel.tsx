@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Pencil, Trash2, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Image as ImageIcon } from "lucide-react";
 import type { IProduct, IProductVariant } from "@/types/product";
 import { getProductVariant, createProductVariant } from "@/lib/helpers/productVariant.backend";
 import { VariantDialog } from "./VariantDialog";
+import VariantImageSelector from "./VariantImageSelector";
 import { toast } from "sonner";
 
 // Helper function untuk format Rupiah
@@ -23,10 +24,17 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Local state untuk product images (reactive to prop changes)
+    const [productImages, setProductImages] = useState<any[]>([]);
+
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
     const [selectedVariant, setSelectedVariant] = useState<IProductVariant | null>(null);
+
+    // Image selector dialog state
+    const [imageSelectorOpen, setImageSelectorOpen] = useState(false);
+    const [selectedVariantForImages, setSelectedVariantForImages] = useState<IProductVariant | null>(null);
 
     // Form state
     const [name, setName] = useState("");
@@ -34,6 +42,14 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
     const [color, setColor] = useState("");
     const [size, setSize] = useState("");
     const [weight, setWeight] = useState(0);
+
+    // Sync product images with prop
+    useEffect(() => {
+        if (product?.images) {
+            console.log('[VariantManagementPanel] Product images updated:', product.images.length);
+            setProductImages(product.images);
+        }
+    }, [product?.images]);
 
     // Refresh untuk Fetch variants 
     useEffect(() => {
@@ -109,6 +125,16 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
         }
     };
 
+    // Handler untuk assign images
+    const handleAssignImages = (variant: IProductVariant) => {
+        console.log('[VariantManagementPanel] Assign Images clicked');
+        console.log('[VariantManagementPanel] Product:', product);
+        console.log('[VariantManagementPanel] Product Images:', product?.images);
+        console.log('[VariantManagementPanel] Product Images Count:', product?.images?.length || 0);
+        setSelectedVariantForImages(variant);
+        setImageSelectorOpen(true);
+    };
+
     if (!product) {
         return (
             <div className="text-center text-gray-500 py-8">
@@ -151,14 +177,22 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
                                 key={variant.id}
                                 className="border border-gray-200 rounded-lg overflow-hidden hover:border-gray-300 hover:shadow-md transition-all"
                             >
-                                {/* Thumbnail Image Placeholder */}
-                                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                                    <div className="text-center">
-                                        <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-white/50 flex items-center justify-center">
-                                            <span className="text-2xl text-gray-400">📦</span>
+                                {/* Thumbnail Image */}
+                                <div className="relative w-full aspect-square bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center overflow-hidden">
+                                    {variant.assignedImages && variant.assignedImages.length > 0 ? (
+                                        <img
+                                            src={variant.assignedImages.find((img: any) => img.isPrimary)?.image.imageUrl || variant.assignedImages[0].image.imageUrl}
+                                            alt={variant.name}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <div className="text-center">
+                                            <div className="w-16 h-16 mx-auto mb-2 rounded-full bg-white/50 flex items-center justify-center">
+                                                <span className="text-2xl text-gray-400">📦</span>
+                                            </div>
+                                            <p className="text-xs text-gray-500 font-medium">No Image</p>
                                         </div>
-                                        <p className="text-xs text-gray-500 font-medium">No Image</p>
-                                    </div>
+                                    )}
                                     {/* Action Buttons - Positioned on top right of image */}
                                     <div className="absolute top-2 right-2 flex gap-1">
                                         <Button
@@ -168,6 +202,15 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
                                             onClick={() => handleEdit(variant)}
                                         >
                                             <Pencil className="h-3 w-3" />
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            size="sm"
+                                            className="h-7 w-7 p-0 bg-white/90 hover:bg-white"
+                                            onClick={() => handleAssignImages(variant)}
+                                            title="Assign Images"
+                                        >
+                                            <ImageIcon className="h-3 w-3" />
                                         </Button>
                                         <Button
                                             variant="secondary"
@@ -239,6 +282,18 @@ export function VariantManagementPanel({ product, onClose }: VariantManagementPa
                 setWeight={setWeight}
                 onSave={handleSave}
             />
+
+            {/* Variant Image Selector Dialog */}
+            {selectedVariantForImages && (
+                <VariantImageSelector
+                    open={imageSelectorOpen}
+                    onOpenChange={setImageSelectorOpen}
+                    variantId={selectedVariantForImages.id}
+                    variantName={selectedVariantForImages.name}
+                    productImages={productImages}
+                    onSuccess={fetchVariants}
+                />
+            )}
         </div>
     );
 }
