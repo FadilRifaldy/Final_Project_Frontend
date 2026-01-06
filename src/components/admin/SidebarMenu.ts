@@ -11,6 +11,7 @@ import {
   MonitorCog,
   FolderTree,
   Barcode,
+  Package,
 } from "lucide-react";
 
 export interface ISubMenuItem {
@@ -71,9 +72,9 @@ export const menuItems: IMenuItems[] = [
     ],
   },
   {
-    name: "Stock Management",
-    path: "/stocks",
-    icon: Warehouse,
+    name: "Inventory Management",
+    path: "/inventory",
+    icon: Package,
     roles: ["SUPER_ADMIN", "STORE_ADMIN"],
   },
   {
