@@ -28,9 +28,11 @@ import { useRouter } from "next/navigation";
 
 export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [user, setUser] = useState<null | { name: string; email: string }>(
-    null
-  );
+  const [user, setUser] = useState<null | {
+    name: string;
+    email: string;
+    role: "CUSTOMER" | "STORE_ADMIN" | "SUPER_ADMIN";
+  }>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -129,7 +131,6 @@ export default function Navbar() {
               </span>
             </button>
 
-            {/* 🔥 Jika user BELUM login → tampilkan Sign In / Sign Up */}
             {!user && (
               <>
                 <Link
@@ -148,7 +149,6 @@ export default function Navbar() {
               </>
             )}
 
-            {/* 🔥 Jika user SUDAH login → tampilkan PROFILE DROPDOWN */}
             {user && (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 cursor-pointer p-2 border rounded-xl hover:bg-gray-100">
@@ -158,9 +158,17 @@ export default function Navbar() {
                 </DropdownMenuTrigger>
 
                 <DropdownMenuContent className="w-40">
+                  {(user?.role === "SUPER_ADMIN" ||
+                    user?.role === "STORE_ADMIN") && (
+                    <DropdownMenuItem onClick={() => router.push("/dashboard")}>
+                      Dashboard
+                    </DropdownMenuItem>
+                  )}
+
                   <DropdownMenuItem onClick={() => router.push("/userProfile")}>
                     Profile
                   </DropdownMenuItem>
+
                   <DropdownMenuItem
                     onClick={handleLogout}
                     className="text-red-500"
@@ -208,7 +216,7 @@ export default function Navbar() {
               </a>
             </nav>
 
-            {/* 🔥 Mobile — kondisi login  */}
+            {/* Mobile — kondisi login  */}
             {!user && (
               <div className="flex flex-col gap-3 px-4">
                 <Link
