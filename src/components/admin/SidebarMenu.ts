@@ -43,7 +43,7 @@ export const menuItems: IMenuItems[] = [
   },
   {
     name: "Store Management",
-    path: "/stores-management",
+    path: "/stores",
     icon: Store,
     roles: ["SUPER_ADMIN"],
   },

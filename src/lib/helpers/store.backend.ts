@@ -8,13 +8,13 @@ export async function createStore(
   data: Partial<IStore>
 ): Promise<ApiResponse<IStore>> {
   try {
-    const res = await axios.post(`${BASE_URL}/stores/create-store`, data, {
+    const res = await axios.post(`${BASE_URL}/stores/create`, data, {
       withCredentials: true,
     });
 
     return {
-      success: true,
-      data: res.data.data,
+      success: res.data.success,  
+      data: res.data.data,          
     };
   } catch (err: unknown) {
     let message = "Gagal menambahkan store";
@@ -32,16 +32,69 @@ export async function createStore(
 
 export async function getStores(): Promise<ApiResponse<IStore[]>> {
   try {
-    const res = await axios.get(`${BASE_URL}/stores/get-stores`, {
+    const res = await axios.get(`${BASE_URL}/stores`, {
       withCredentials: true,
     });
 
     return {
-      success: true,
+      success: res.data.success,
       data: res.data.data,
     };
   } catch (err: unknown) {
     let message = "Gagal mengambil data store";
+
+    if (axios.isAxiosError(err)) {
+      message = err.response?.data?.message || message;
+    }
+
+    return {
+      success: false,
+      message,
+    };
+  }
+}
+
+export async function updateStore(
+  id: string,
+  data: Partial<IStore>
+): Promise<ApiResponse<IStore>> {
+  try {
+    const res = await axios.put(`${BASE_URL}/stores/update/${id}`, data, {
+      withCredentials: true,
+    });
+
+    return {
+      success: res.data.success,
+      data: res.data.data,
+    };
+  } catch (err: unknown) {
+    let message = "Gagal memperbarui store";
+
+    if (axios.isAxiosError(err)) {
+      message = err.response?.data?.message || message;
+    }
+
+    return {
+      success: false,
+      message,
+    };
+  }
+}
+
+export async function deleteStore(
+  id: string
+): Promise<ApiResponse<null>> {
+  try {
+    const res = await axios.delete(`${BASE_URL}/stores/delete/${id}`, {
+      withCredentials: true,
+    });
+
+    return {
+      success: res.data.success || true,
+      data: null,
+    };
+  } catch (err: unknown) {
+    let message = "Gagal menghapus store";
 
     if (axios.isAxiosError(err)) {
       message = err.response?.data?.message || message;

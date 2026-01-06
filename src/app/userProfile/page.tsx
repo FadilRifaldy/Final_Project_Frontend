@@ -3,53 +3,53 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-
-import { getMe } from "@/lib/helpers/auth.backend";
-import { sendVerifyEmail } from "@/lib/helpers/auth.backend";
-import { updateProfile } from "@/lib/helpers/auth.backend";
-import { getCloudinarySignature } from "@/lib/helpers/auth.backend";
-import { uploadToCloudinary } from "@/lib/helpers/auth.backend";
 import { IUser } from "@/types/user";
+import {
+  getMe,
+  sendVerifyEmail,
+  updateProfile,
+  getCloudinarySignature,
+  uploadToCloudinary,
+} from "@/lib/helpers/auth.backend";
 
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, User, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-import {
-  Mail,
-  User,
-  Lock,
-  Image as ImageIcon,
-  ShieldCheck,
-  Smartphone,
-  MailWarning,
-} from "lucide-react";
+import AvatarSection from "@/components/userProfile/avatar-section";
+import PersonalInfoSection from "@/components/userProfile/personal-info-section";
+import VerificationAlert from "@/components/userProfile/verification-alert";
 import AddressList from "@/components/address/address-list";
+import ReferralCard from "@/components/userProfile/referral-card";
+import SecuritySection from "@/components/userProfile/security-section";
 
 export default function UserProfilePage() {
   const router = useRouter();
 
+  // User State
   const [user, setUser] = useState<IUser | null>(null);
   const [initialUser, setInitialUser] = useState<IUser | null>(null);
   const [originalEmail, setOriginalEmail] = useState("");
   const [emailChanged, setEmailChanged] = useState(false);
   const [phone, setPhone] = useState("");
+
+  // Loading States
   const [loading, setLoading] = useState(false);
   const [sendingVerify, setSendingVerify] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
+
+  // Avatar States
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [uploading, setUploading] = useState(false);
 
+  // Fetch User Data
   useEffect(() => {
     let mounted = true;
 
     const fetchUser = async () => {
       const res = await getMe();
-
       if (!mounted) return;
 
       if (!res.success) {
@@ -61,26 +61,25 @@ export default function UserProfilePage() {
       setInitialUser(res.user);
       setOriginalEmail(res.user.email);
       setPhone(res.user.phone || "");
+      setPageLoading(false);
     };
 
     fetchUser();
-
     return () => {
       mounted = false;
     };
   }, [router]);
 
-  if (!user) return null;
-
+  // Handle Save Profile
   const handleSaveProfile = async () => {
-    setLoading(true);
+    if (!user) return;
 
+    setLoading(true);
     const res = await updateProfile({
       name: user.name,
       email: user.email,
       phone,
     });
-
     setLoading(false);
 
     if (!res.success) {
@@ -95,36 +94,34 @@ export default function UserProfilePage() {
     );
 
     if (emailChanged) {
-      setTimeout(() => {
-        router.replace("/signInPage");
-      }, 1500);
+      setTimeout(() => router.replace("/signInPage"), 1500);
       return;
     }
 
     const refreshed = await getMe();
     if (refreshed.success) {
       setUser(refreshed.user);
+      setInitialUser(refreshed.user);
       setOriginalEmail(refreshed.user.email);
       setEmailChanged(false);
       setPhone(refreshed.user.phone || "");
     }
   };
 
+  // Handle Send Verification Email
   const handleSendVerifyEmail = async () => {
     setSendingVerify(true);
-
     const res = await sendVerifyEmail();
-
     setSendingVerify(false);
 
     if (!res.success) {
       toast.error(res.message);
       return;
     }
-
     toast.success("Email verifikasi dikirim. Silakan cek inbox.");
   };
 
+  // Handle Cancel Changes
   const handleCancel = () => {
     if (!initialUser) return;
 
@@ -132,21 +129,22 @@ export default function UserProfilePage() {
     setPhone(initialUser.phone || "");
     setOriginalEmail(initialUser.email);
     setEmailChanged(false);
+    setAvatarFile(null);
+    setAvatarPreview(null);
 
     toast.info("Perubahan dibatalkan");
   };
 
+  // Handle Avatar Change
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/jpg"];
-
     if (!allowedTypes.includes(file.type)) {
       toast.error("Format gambar harus JPG, JPEG, PNG, atau GIF");
       return;
     }
-
     if (file.size > 1 * 1024 * 1024) {
       toast.error("Ukuran gambar maksimal 1MB");
       return;
@@ -156,15 +154,15 @@ export default function UserProfilePage() {
     setAvatarPreview(URL.createObjectURL(file));
   };
 
+  // Handle Upload Avatar
   const handleUploadAvatar = async () => {
-    if (!avatarFile) return;
+    if (!avatarFile || !user) return;
 
     try {
       setUploading(true);
       setUploadProgress(0);
 
       const signature = await getCloudinarySignature();
-
       const imageUrl = await uploadToCloudinary(
         avatarFile,
         signature,
@@ -184,209 +182,140 @@ export default function UserProfilePage() {
       }
 
       toast.success("Foto profil berhasil diperbarui");
-
-      // refresh user
       setUser((prev) => (prev ? { ...prev, profileImage: imageUrl } : prev));
-
+      setInitialUser((prev) =>
+        prev ? { ...prev, profileImage: imageUrl } : prev
+      );
       setAvatarFile(null);
       setAvatarPreview(null);
     } catch (error: unknown) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Terjadi kesalahan tidak terduga");
-      }
+      toast.error(error instanceof Error ? error.message : "Terjadi kesalahan");
     } finally {
       setUploading(false);
       setUploadProgress(0);
     }
   };
 
+  // Loading State
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100/50">
+        <div className="text-center space-y-3">
+          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto" />
+          <p className="text-sm text-slate-500">Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) return null;
+
+  const hasChanges =
+    user.name !== initialUser?.name ||
+    user.email !== initialUser?.email ||
+    phone !== (initialUser?.phone || "");
+
   return (
-    <div className="min-h-screen flex justify-center items-start p-6 bg-muted/30">
-      <Card className="w-full max-w-2xl shadow-lg rounded-2xl">
-        <CardHeader>
-          <CardTitle className="text-xl flex items-center gap-2">
-            <button
+    <div className="min-h-screen flex justify-center items-start py-3 sm:py-4 md:py-6 px-3 sm:px-4 md:px-6 bg-gradient-to-br from-slate-50 to-slate-100/50">
+      <Card className="w-full max-w-3xl shadow-lg border-slate-200 mb-6 sm:mb-8">
+        {/* Header */}
+        <CardHeader className="border-b border-slate-100 bg-white/80 backdrop-blur p-4 sm:p-6">
+          <div className="flex items-center gap-2 sm:gap-3">
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => router.back()}
-              className="rounded-full p-2 hover:bg-muted"
+              className="rounded-full hover:bg-slate-100 h-8 w-8 sm:h-10 sm:w-10"
             >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-            <User className="w-5 h-5" />
-            User Profile
-          </CardTitle>
+              <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </Button>
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 sm:p-2 bg-primary/10 rounded-lg">
+                <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+              </div>
+              <div className="min-w-0">
+                <CardTitle className="text-base sm:text-xl truncate">
+                  User Profile
+                </CardTitle>
+                <p className="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">
+                  Manage your account information
+                </p>
+              </div>
+            </div>
+          </div>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          <div className="flex items-center gap-4">
-            <Avatar className="w-20 h-20">
-              <AvatarImage
-                src={
-                  avatarPreview ||
-                  user.profileImage ||
-                  "/avatar-placeholder.png"
-                }
-              />
-              <AvatarFallback>
-                {user.name.charAt(0).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
+        <CardContent className="space-y-4 sm:space-y-6 p-4 sm:p-6">
+          {/* Avatar Section */}
+          <AvatarSection
+            user={user}
+            avatarPreview={avatarPreview}
+            avatarFile={avatarFile}
+            uploading={uploading}
+            uploadProgress={uploadProgress}
+            onAvatarChange={handleAvatarChange}
+            onUploadAvatar={handleUploadAvatar}
+          />
 
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <ImageIcon className="w-4 h-4" />
-                Profile Picture
-              </Label>
+          {/* Personal Info Section */}
+          <PersonalInfoSection
+            user={user}
+            phone={phone}
+            emailChanged={emailChanged}
+            originalEmail={originalEmail}
+            onUserChange={setUser}
+            onPhoneChange={setPhone}
+            onEmailChange={setEmailChanged}
+          />
 
-              <Input
-                className="cursor-pointer"
-                type="file"
-                accept=".jpg,.jpeg,.png,.gif"
-                onChange={handleAvatarChange}
-                disabled={uploading}
-              />
-              <p className="text-xs text-muted-foreground">
-                Supported formats: JPG, JPEG, PNG, GIF · Max size: 1 MB
-              </p>
-
-              {avatarFile && (
-                <Button
-                  size="sm"
-                  onClick={handleUploadAvatar}
-                  disabled={uploading}
-                >
-                  {uploading ? `Mengupload ${uploadProgress}%` : "Upload Foto"}
-                </Button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Name
-              </Label>
-              <Input
-                placeholder="Enter your full name"
-                value={user.name}
-                onChange={(e) => setUser({ ...user, name: e.target.value })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label className="flex items-center gap-2">
-                <Mail className="w-4 h-4" />
-                Email
-              </Label>
-              <Input
-                disabled={user.provider === "GOOGLE"}
-                value={user.email}
-                onChange={(e) => {
-                  const newEmail = e.target.value;
-                  setUser({ ...user, email: newEmail });
-                  setEmailChanged(newEmail !== originalEmail);
-                }}
-              />
-            </div>
-          </div>
-
-          {emailChanged && (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-700">
-              <MailWarning className="h-4 w-4 mt-0.5 flex-shrink-0" />
-              <p>
-                Changing your email will require re-verification and a new
-                login.
-              </p>
-            </div>
+          {/* Verification Alert */}
+          {!user.isVerified && (
+            <VerificationAlert
+              sendingVerify={sendingVerify}
+              onSendVerify={handleSendVerifyEmail}
+            />
           )}
 
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Smartphone className="w-4 h-4" />
-              Phone Number
-            </Label>
-            <Input
-              placeholder="e.g. +62 8xxxxxxxxxx"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between p-4 rounded-xl border">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-muted-foreground" />
-              <span className="text-sm">
-                Email Status: {user.isVerified ? "Verified" : "Unverified"}
-              </span>
-            </div>
-
-            {!user.isVerified && (
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                size="sm"
-                disabled={sendingVerify}
-                onClick={handleSendVerifyEmail}
-              >
-                {sendingVerify
-                  ? "Sending..."
-                  : emailChanged
-                  ? "Resend Verification Email"
-                  : "Send Verification Email"}
-              </Button>
-            )}
-          </div>
-
-          <AddressList />
-
-          <div className="p-4 rounded-xl border bg-muted/40">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Referral Code</span>
-              <span className="font-mono text-sm bg-white px-3 py-1 rounded border">
-                {user.referralCode}
-              </span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-2">
-              Share this code with friends to earn rewards
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="text-sm font-semibold flex items-center gap-2">
-              <Lock className="w-4 h-4" />
-              Account Security
+          {/* Address List */}
+          <div className="space-y-2 sm:space-y-3">
+            <h3 className="text-sm font-semibold text-slate-700">
+              Delivery Addresses
             </h3>
-
-            <p className="text-sm text-muted-foreground">
-              For security reasons, password changes are handled via email.
-            </p>
-
-            <Button
-              className="cursor-pointer"
-              disabled={user.provider === "GOOGLE"}
-              variant="outline"
-              onClick={() => router.push("/reset-password?mode=change")}
-            >
-              Change Password
-            </Button>
+            <AddressList />
           </div>
 
-          <div className="flex justify-end gap-3">
+          {/* Referral Card */}
+          <ReferralCard referralCode={user.referralCode} />
+
+          {/* Security Section */}
+          <SecuritySection
+            provider={user.provider}
+            onChangePassword={() => router.push("/reset-password?mode=change")}
+          />
+
+          {/* Action Buttons */}
+          <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t border-slate-200">
             <Button
-              className="cursor-pointer"
               variant="outline"
               onClick={handleCancel}
+              disabled={loading || !hasChanges}
+              className="w-full sm:w-auto text-sm h-10"
             >
-              Cancel
+              Cancel Changes
             </Button>
             <Button
-              className="cursor-pointer"
               onClick={handleSaveProfile}
-              disabled={loading}
+              disabled={loading || !hasChanges}
+              className="w-full sm:w-auto shadow-sm hover:shadow-md transition-shadow text-sm h-10"
             >
-              {loading ? "Saving..." : "Save Changes"}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </div>
         </CardContent>
