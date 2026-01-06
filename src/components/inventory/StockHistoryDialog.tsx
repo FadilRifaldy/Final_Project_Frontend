@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/lib/api/axios';
 import {
     Dialog,
     DialogContent,
@@ -65,11 +65,10 @@ export default function StockHistoryDialog({
     const fetchHistory = async () => {
         setLoading(true);
         try {
-            const response = await axios.get(
-                `http://localhost:8800/api/stock-journal/variant/${storeId}/${variantId}`,
+            const response = await api.get(
+                `/api/stock-journal/variant/${storeId}/${variantId}`,
                 {
-                    params: { page: 1, limit: 50 },
-                    withCredentials: true
+                    params: { page: 1, limit: 50 }
                 }
             );
             setJournals(response.data.data || []);

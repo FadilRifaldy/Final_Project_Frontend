@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import api from '@/lib/api/axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Package, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
@@ -40,10 +40,7 @@ export default function InventoryPage() {
     useEffect(() => {
         const fetchRole = async () => {
             try {
-                const response = await axios.get(
-                    'http://localhost:8800/auth/dashboard',
-                    { withCredentials: true }
-                );
+                const response = await api.get('/auth/dashboard');
                 setRole(response.data.user.role);
             } catch (error) {
                 console.error('Error fetching role:', error);
@@ -74,21 +71,15 @@ export default function InventoryPage() {
 
         setInventoryLoading(true);
         try {
-            const response = await axios.get(
-                `http://localhost:8800/api/inventory/store/${selectedStoreId}`,
+            // Use new endpoint that shows ALL variants (including stock 0)
+            const response = await api.get(
+                `/api/inventory/store/${selectedStoreId}/all-variants`,
                 {
-                    params: { page: 1, limit: 100 },
-                    withCredentials: true
+                    params: { page: 1, limit: 100 }
                 }
             );
 
-            // Add available field
-            const inventoriesWithAvailable = response.data.data.map((item: InventoryItem) => ({
-                ...item,
-                available: item.quantity - item.reserved
-            }));
-
-            setInventories(inventoriesWithAvailable);
+            setInventories(response.data.data);
         } catch (error) {
             console.error('Error fetching inventory:', error);
         } finally {

@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '@/lib/api/axios';
 import {
     Select,
     SelectContent,
@@ -36,9 +36,8 @@ export default function StoreSelector({
     useEffect(() => {
         const fetchStores = async () => {
             try {
-                const response = await axios.get('http://localhost:8800/api/stores', {
-                    params: { isActive: true },
-                    withCredentials: true
+                const response = await api.get('/stores/get-stores', {
+                    params: { isActive: true }
                 });
 
                 setStores(response.data.data || []);
