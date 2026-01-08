@@ -170,7 +170,7 @@ export default function ProductsPage() {
         const newProduct = await addProduct(name, description, categoryId, []);
 
         // 2. Upload images if any selected
-        if (selectedFiles.length > 0 && newProduct) {
+        if (selectedFiles.length > 0) {
           const latestProducts = products;
           const createdProduct = latestProducts[latestProducts.length - 1];
 
