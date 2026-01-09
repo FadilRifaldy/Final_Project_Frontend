@@ -49,21 +49,10 @@ export default function InventoryTable({
     loading,
     onRefresh
 }: InventoryTableProps) {
-    const [search, setSearch] = useState('');
     const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
     const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
     const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
     const [updateType, setUpdateType] = useState<'IN' | 'OUT'>('IN');
-
-    // Filter inventories by search
-    const filteredInventories = inventories.filter((item) => {
-        const searchLower = search.toLowerCase();
-        return (
-            item.productVariant.name.toLowerCase().includes(searchLower) ||
-            item.productVariant.sku.toLowerCase().includes(searchLower) ||
-            item.productVariant.product.name.toLowerCase().includes(searchLower)
-        );
-    });
 
     const handleStockUpdate = (item: InventoryItem, type: 'IN' | 'OUT') => {
         setSelectedItem(item);
@@ -92,45 +81,34 @@ export default function InventoryTable({
 
     return (
         <div className="space-y-4">
-            {/* Search */}
-            <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                    placeholder="Search by product name or SKU..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-10"
-                />
-            </div>
-
-            {/* Table */}
+            {/* Inventory Table */}
             <div className="border rounded-lg">
                 <Table>
                     <TableHeader>
                         <TableRow>
-                            <TableHead>Product</TableHead>
-                            <TableHead>SKU</TableHead>
-                            <TableHead>Category</TableHead>
-                            <TableHead className="text-right">Stock</TableHead>
-                            <TableHead className="text-right">Reserved</TableHead>
-                            <TableHead className="text-right">Available</TableHead>
-                            <TableHead className="text-right">Actions</TableHead>
+                            <TableHead className="text-left">Product</TableHead>
+                            <TableHead className="text-center">SKU</TableHead>
+                            <TableHead className="text-center">Category</TableHead>
+                            <TableHead className="text-center">Stock</TableHead>
+                            <TableHead className="text-center">Reserved</TableHead>
+                            <TableHead className="text-center">Available</TableHead>
+                            <TableHead className="text-center">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {filteredInventories.length === 0 ? (
+                        {inventories.length === 0 ? (
                             <TableRow>
                                 <TableCell colSpan={7} className="text-center py-12">
                                     <Package className="h-12 w-12 text-muted-foreground mx-auto mb-2" />
                                     <p className="text-muted-foreground">
-                                        {search ? 'No products found' : 'No inventory data'}
+                                        No inventory data
                                     </p>
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            filteredInventories.map((item) => (
+                            inventories.map((item) => (
                                 <TableRow key={`${item.productVariantId}-${item.storeId}`}>
-                                    <TableCell>
+                                    <TableCell className="text-left">
                                         <div>
                                             <p className="font-medium">{item.productVariant.product.name}</p>
                                             <p className="text-sm text-muted-foreground">
@@ -138,53 +116,56 @@ export default function InventoryTable({
                                             </p>
                                         </div>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-center">
                                         <code className="text-xs bg-muted px-2 py-1 rounded">
                                             {item.productVariant.sku}
                                         </code>
                                     </TableCell>
-                                    <TableCell>
+                                    <TableCell className="text-center">
                                         <Badge variant="outline">
                                             {item.productVariant.product.category.name}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-right font-medium">
+                                    <TableCell className="text-center font-medium">
                                         {item.quantity}
                                     </TableCell>
-                                    <TableCell className="text-right text-muted-foreground">
+                                    <TableCell className="text-center text-muted-foreground">
                                         {item.reserved}
                                     </TableCell>
-                                    <TableCell className="text-right">
+                                    <TableCell className="text-center">
                                         <Badge
                                             variant={item.available > 10 ? 'default' : item.available > 0 ? 'secondary' : 'destructive'}
                                         >
                                             {item.available}
                                         </Badge>
                                     </TableCell>
-                                    <TableCell className="text-right">
-                                        <div className="flex items-center justify-end gap-2">
+                                    <TableCell className="text-center">
+                                        <div className="flex items-center justify-center gap-2">
                                             <Button
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => handleStockUpdate(item, 'IN')}
+                                                className="h-8"
                                             >
-                                                <Plus className="h-4 w-4 mr-1" />
+                                                <Plus className="h-3 w-3 mr-1" />
                                                 IN
                                             </Button>
                                             <Button
                                                 size="sm"
                                                 variant="outline"
                                                 onClick={() => handleStockUpdate(item, 'OUT')}
+                                                className="h-8"
                                             >
-                                                <Minus className="h-4 w-4 mr-1" />
+                                                <Minus className="h-3 w-3 mr-1" />
                                                 OUT
                                             </Button>
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 onClick={() => handleViewHistory(item)}
+                                                className="h-8"
                                             >
-                                                <History className="h-4 w-4" />
+                                                <History className="h-3 w-3" />
                                             </Button>
                                         </div>
                                     </TableCell>

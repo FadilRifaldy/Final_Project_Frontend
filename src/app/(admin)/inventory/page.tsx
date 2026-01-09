@@ -8,6 +8,8 @@ import { Button } from '@/components/ui/button';
 import { Package, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
 import StoreSelector from '@/components/inventory/StoreSelector';
 import InventoryTable from '@/components/inventory/InventoryTable';
+import InventoryFilters from '@/components/inventory/InventoryFilters';
+import StoreInfoCard from '@/components/inventory/StoreInfoCard';
 
 interface InventoryItem {
     productVariantId: string;
@@ -29,12 +31,31 @@ interface InventoryItem {
     };
 }
 
+interface Category {
+    id: string;
+    name: string;
+}
+
+interface FilterState {
+    search: string;
+    categoryId: string;
+    stockStatus: string;
+    sortBy: string;
+}
+
 export default function InventoryPage() {
     const [role, setRole] = useState<string>('');
     const [loading, setLoading] = useState(true);
     const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
     const [inventories, setInventories] = useState<InventoryItem[]>([]);
     const [inventoryLoading, setInventoryLoading] = useState(false);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [filters, setFilters] = useState<FilterState>({
+        search: '',
+        categoryId: 'all',
+        stockStatus: 'all',
+        sortBy: 'name-asc'
+    });
     const router = useRouter();
 
     useEffect(() => {
@@ -52,6 +73,19 @@ export default function InventoryPage() {
         fetchRole();
     }, [router]);
 
+    // Fetch categories
+    useEffect(() => {
+        const fetchCategories = async () => {
+            try {
+                const response = await api.get('/api/categories');
+                setCategories(response.data.data || []);
+            } catch (error) {
+                console.error('Error fetching categories:', error);
+            }
+        };
+        fetchCategories();
+    }, []);
+
     // Redirect CUSTOMER
     useEffect(() => {
         if (role === 'CUSTOMER') {
@@ -59,12 +93,12 @@ export default function InventoryPage() {
         }
     }, [role, router]);
 
-    // Fetch inventory when store selected
+    // Fetch inventory when store or filters change
     useEffect(() => {
         if (selectedStoreId) {
             fetchInventory();
         }
-    }, [selectedStoreId]);
+    }, [selectedStoreId, filters]);
 
     const fetchInventory = async () => {
         if (!selectedStoreId) return;
@@ -75,7 +109,14 @@ export default function InventoryPage() {
             const response = await api.get(
                 `/api/inventory/store/${selectedStoreId}/all-variants`,
                 {
-                    params: { page: 1, limit: 100 }
+                    params: {
+                        page: 1,
+                        limit: 100,
+                        search: filters.search || undefined,
+                        categoryId: filters.categoryId !== 'all' ? filters.categoryId : undefined,
+                        stockStatus: filters.stockStatus !== 'all' ? filters.stockStatus : undefined,
+                        sortBy: filters.sortBy || undefined
+                    }
                 }
             );
 
@@ -120,70 +161,92 @@ export default function InventoryPage() {
     }
 
     return (
-        <div className="container mx-auto py-8 px-4">
-            {/* Header */}
-            <div className="mb-8">
-                <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-3">
-                        <div>
-                            <h2 className="text-3xl font-bold">Inventory Management</h2>
-                            <p className="text-muted-foreground">
-                                Manage stock levels and track inventory movements
-                            </p>
-                        </div>
+        <div className="h-screen flex flex-col overflow-hidden">
+
+            {/* Header - Fixed */}
+            <div className="shrink-0 border-b bg-background px-6 py-4">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <h2 className="text-2xl font-bold">Inventory Management</h2>
+                        <p className="text-muted-foreground">
+                            Manage stock levels and track inventory movements
+                        </p>
                     </div>
                     {selectedStoreId && (
                         <Button
-                            variant="outline"
+                            variant="default"
                             size="sm"
                             onClick={fetchInventory}
                             disabled={inventoryLoading}
                         >
-                            <RefreshCw className={`h-4 w-4 mr-2 ${inventoryLoading ? 'animate-spin' : ''}`} />
-                            Refresh
+                            <RefreshCw className={`h-4 w-4 ${inventoryLoading ? 'animate-spin' : ''} md:mr-2`} />
+                            <span className="hidden md:inline">Refresh</span>
                         </Button>
                     )}
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="space-y-6">
-                {/* Store Selector */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Select Store</CardTitle>
-                        <CardDescription>
-                            Choose a store to view and manage its inventory
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <StoreSelector
-                            selectedStoreId={selectedStoreId}
-                            onStoreChange={setSelectedStoreId}
-                            userRole={role}
-                        />
-                    </CardContent>
-                </Card>
+            <div className="flex-1 overflow-y-auto">
+                <div className="container mx-auto py-6 px-4">
 
-                {/* Inventory Table */}
-                {selectedStoreId && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Inventory List</CardTitle>
-                            <CardDescription>
-                                View stock levels and update inventory
-                            </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <InventoryTable
-                                storeId={selectedStoreId}
-                                inventories={inventories}
-                                loading={inventoryLoading}
-                                onRefresh={fetchInventory}
-                            />
-                        </CardContent>
-                    </Card>
-                )}
+                    {/* Store Information */}
+                    {selectedStoreId && (
+                        <StoreInfoCard storeId={selectedStoreId} />
+                    )}
+
+                    <div className="space-y-6 mt-6">
+                        {/* Store Selector & Filters - Horizontal on desktop, Vertical on mobile */}
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            {/* Store Selector */}
+                            <Card className="hover:shadow-lg transition-shadow">
+                                <CardHeader>
+                                    <CardTitle>Select Store</CardTitle>
+                                    <CardDescription>
+                                        Choose a store to view and manage its inventory
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <StoreSelector
+                                        selectedStoreId={selectedStoreId}
+                                        onStoreChange={setSelectedStoreId}
+                                        userRole={role}
+                                    />
+                                </CardContent>
+                            </Card>
+
+                            {/* Inventory Filters */}
+                            {selectedStoreId && (
+                                <InventoryFilters
+                                    onFilterChange={setFilters}
+                                    categories={categories}
+                                />
+                            )}
+                        </div>
+
+
+
+                        {/* Inventory Table */}
+                        {selectedStoreId && (
+                            <Card className="hover:shadow-lg transition-shadow">
+                                <CardHeader>
+                                    <CardTitle>Inventory List</CardTitle>
+                                    <CardDescription>
+                                        View stock levels and update inventory
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent>
+                                    <InventoryTable
+                                        storeId={selectedStoreId}
+                                        inventories={inventories}
+                                        loading={inventoryLoading}
+                                        onRefresh={fetchInventory}
+                                    />
+                                </CardContent>
+                            </Card>
+                        )}
+                    </div>
+                </div>
             </div>
         </div>
     );
