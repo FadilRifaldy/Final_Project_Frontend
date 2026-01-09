@@ -23,12 +23,14 @@ interface StoreSelectorProps {
     selectedStoreId: string | null;
     onStoreChange: (storeId: string) => void;
     userRole: string;
+    compact?: boolean;
 }
 
 export default function StoreSelector({
     selectedStoreId,
     onStoreChange,
-    userRole
+    userRole,
+    compact = false
 }: StoreSelectorProps) {
     const [stores, setStores] = useState<StoreData[]>([]);
     const [loading, setLoading] = useState(true);
@@ -97,6 +99,24 @@ export default function StoreSelector({
     const filteredStores = selectedCity === 'all'
         ? stores
         : stores.filter(s => s.city === selectedCity);
+
+    // Compact mode for inline header
+    if (compact) {
+        return (
+            <Select value={selectedStoreId || ''} onValueChange={onStoreChange}>
+                <SelectTrigger className="h-8 w-[280px] border-0 shadow-none focus:ring-0">
+                    <SelectValue placeholder="Select store" />
+                </SelectTrigger>
+                <SelectContent>
+                    {filteredStores.map((store) => (
+                        <SelectItem key={store.id} value={store.id}>
+                            {store.name} • {store.city}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        );
+    }
 
     // Store Admin - show assigned store only (read-only)
     if (userRole === 'STORE_ADMIN' && stores.length > 0) {

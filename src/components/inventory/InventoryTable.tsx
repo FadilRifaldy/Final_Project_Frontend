@@ -12,7 +12,8 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Search, Package, History, Plus, Minus } from 'lucide-react';
+import { Search, Package, History, Plus, Minus, AlertTriangle, XCircle } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import StockUpdateDialog from './StockUpdateDialog';
 import StockHistoryDialog from './StockHistoryDialog';
 
@@ -133,37 +134,57 @@ export default function InventoryTable({
                                         {item.reserved}
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <Badge
-                                            variant={item.available > 10 ? 'default' : item.available > 0 ? 'secondary' : 'destructive'}
-                                        >
-                                            {item.available}
-                                        </Badge>
+                                        <div className="flex items-center justify-center gap-2">
+                                            {/* Visual progress indicator */}
+                                            <div className="relative w-12 h-2 bg-muted rounded-full overflow-hidden">
+                                                <div
+                                                    className={cn(
+                                                        "absolute inset-y-0 left-0 rounded-full transition-all",
+                                                        item.available > 50 ? "bg-green-500" :
+                                                            item.available > 10 ? "bg-amber-500" :
+                                                                item.available > 0 ? "bg-orange-500" : "bg-red-500"
+                                                    )}
+                                                    style={{ width: `${Math.min((item.available / item.quantity) * 100, 100)}%` }}
+                                                />
+                                            </div>
+
+                                            {/* Number with tabular nums */}
+                                            <span className="text-sm font-medium tabular-nums">
+                                                {item.available}
+                                            </span>
+
+                                            {/* Warning icons */}
+                                            {item.available <= 10 && item.available > 0 && (
+                                                <AlertTriangle className="h-3 w-3 text-amber-500" />
+                                            )}
+                                            {item.available === 0 && (
+                                                <XCircle className="h-3 w-3 text-red-500" />
+                                            )}
+                                        </div>
                                     </TableCell>
                                     <TableCell className="text-center">
-                                        <div className="flex items-center justify-center gap-2">
+                                        <div className="flex items-center justify-center gap-1">
                                             <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleStockUpdate(item, 'IN')}
-                                                className="h-8"
-                                            >
-                                                <Plus className="h-3 w-3 mr-1" />
-                                                IN
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                onClick={() => handleStockUpdate(item, 'OUT')}
-                                                className="h-8"
-                                            >
-                                                <Minus className="h-3 w-3 mr-1" />
-                                                OUT
-                                            </Button>
-                                            <Button
-                                                size="sm"
+                                                size="icon"
                                                 variant="ghost"
+                                                className="h-7 w-7"
+                                                onClick={() => handleStockUpdate(item, 'IN')}
+                                            >
+                                                <Plus className="h-3 w-3" />
+                                            </Button>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-7 w-7"
+                                                onClick={() => handleStockUpdate(item, 'OUT')}
+                                            >
+                                                <Minus className="h-3 w-3" />
+                                            </Button>
+                                            <Button
+                                                size="icon"
+                                                variant="ghost"
+                                                className="h-7 w-7"
                                                 onClick={() => handleViewHistory(item)}
-                                                className="h-8"
                                             >
                                                 <History className="h-3 w-3" />
                                             </Button>
