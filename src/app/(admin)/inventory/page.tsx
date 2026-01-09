@@ -5,11 +5,15 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api/axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Package, AlertCircle, RefreshCw, Loader2 } from 'lucide-react';
+import { AlertCircle, RefreshCw, Loader2, Search, AlertTriangle, XCircle, Store, User } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 import StoreSelector from '@/components/inventory/StoreSelector';
 import InventoryTable from '@/components/inventory/InventoryTable';
-import InventoryFilters from '@/components/inventory/InventoryFilters';
-import StoreInfoCard from '@/components/inventory/StoreInfoCard';
+import { StatBadge } from '@/components/inventory/StatBadge';
+import { AdvancedFiltersPopover } from '@/components/inventory/AdvancedFiltersPopover';
+import { ErrorCard } from '@/components/inventory/ErrorCard';
 
 interface InventoryItem {
     productVariantId: string;
@@ -48,6 +52,7 @@ export default function InventoryPage() {
     const [assignedStoreId, setAssignedStoreId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
+    const [storeDetails, setStoreDetails] = useState<{ adminName: string } | null>(null);
     const [inventories, setInventories] = useState<InventoryItem[]>([]);
     const [inventoryLoading, setInventoryLoading] = useState(false);
     const [categories, setCategories] = useState<Category[]>([]);
@@ -59,6 +64,7 @@ export default function InventoryPage() {
     });
     const router = useRouter();
 
+    // fetch role and assigned store
     useEffect(() => {
         const fetchRole = async () => {
             try {
@@ -93,6 +99,30 @@ export default function InventoryPage() {
         fetchCategories();
     }, []);
 
+    // Fetch store details when store is selected
+    useEffect(() => {
+        const fetchStoreDetails = async () => {
+            if (!selectedStoreId) {
+                setStoreDetails(null);
+                return;
+            }
+
+            try {
+                const response = await api.get(`/stores/${selectedStoreId}`);
+                const store = response.data.data;
+
+                // Get admin name from storeAdmins array
+                const adminName = store.storeAdmins?.[0]?.name || 'No admin assigned';
+                setStoreDetails({ adminName });
+            } catch (error) {
+                console.error('Error fetching store details:', error);
+                setStoreDetails(null);
+            }
+        };
+
+        fetchStoreDetails();
+    }, [selectedStoreId]);
+
     // Redirect CUSTOMER
     useEffect(() => {
         if (role === 'CUSTOMER') {
@@ -106,6 +136,17 @@ export default function InventoryPage() {
             fetchInventory();
         }
     }, [selectedStoreId, filters]);
+
+    // Calculate stats
+    const inStockCount = inventories.filter(i => i.available > 10).length;
+    const lowStockCount = inventories.filter(i => i.available > 0 && i.available <= 10).length;
+    const outOfStockCount = inventories.filter(i => i.available === 0).length;
+
+    // Calculate active filter count
+    const activeFilterCount = [
+        filters.categoryId !== 'all',
+        filters.sortBy !== 'name-asc'
+    ].filter(Boolean).length;
 
     const fetchInventory = async () => {
         if (!selectedStoreId) return;
@@ -147,139 +188,157 @@ export default function InventoryPage() {
     // Check if STORE_ADMIN has assigned store
     if (role === 'STORE_ADMIN' && !assignedStoreId) {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Card className="w-full max-w-md">
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <AlertCircle className="h-5 w-5 text-amber-500" />
-                            <CardTitle>No Store Assigned</CardTitle>
-                        </div>
-                        <CardDescription>
-                            You haven't been assigned to any store yet.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                        <p className="text-sm text-muted-foreground">
-                            Please contact your Super Admin to assign you to a store before you can access inventory management.
-                        </p>
-                        <Button onClick={() => router.push('/dashboard')} className="w-full">
-                            Go to Dashboard
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
+            <ErrorCard
+                title="No Store Assigned"
+                description="You haven't been assigned to any store yet. Please contact your Super Admin to assign you to a store before you can access inventory management."
+                buttonText="Go to Dashboard"
+                buttonPath="/dashboard"
+                variant="warning"
+            />
         );
     }
 
+    // Check authorization
     if (role !== 'SUPER_ADMIN' && role !== 'STORE_ADMIN') {
         return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Card className="w-full max-w-md">
-                    <CardHeader>
-                        <div className="flex items-center gap-2">
-                            <AlertCircle className="h-5 w-5 text-destructive" />
-                            <CardTitle>Unauthorized Access</CardTitle>
-                        </div>
-                        <CardDescription>
-                            You don't have permission to access this page.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Button onClick={() => router.push('/')} className="w-full">
-                            Go to Homepage
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
+            <ErrorCard
+                title="Unauthorized Access"
+                description="You don't have permission to access this page."
+                buttonText="Go to Homepage"
+                buttonPath="/"
+                variant="error"
+            />
         );
     }
 
     return (
         <div className="h-screen flex flex-col overflow-hidden">
-
-            {/* Header - Fixed */}
-            <div className="shrink-0 border-b bg-background px-6 py-4">
+            <div className="border-b bg-background px-6 py-3">
+                <h2 className="text-2xl font-bold">Inventory Management</h2>
                 <div className="flex items-center justify-between">
-                    <div>
-                        <h2 className="text-2xl font-bold">Inventory Management</h2>
-                        <p className="text-muted-foreground">
-                            Manage stock levels and track inventory movements
-                        </p>
+                    {/* Left: Store selector */}
+                    <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <Store className="h-4 w-4" />
+                            <span>Store:</span>
+                        </div>
+                        <StoreSelector
+                            selectedStoreId={selectedStoreId}
+                            onStoreChange={setSelectedStoreId}
+                            userRole={role}
+                            compact={true}
+                        />
+
+                        {/* Store Admin Info */}
+                        {storeDetails && (
+                            <>
+                                <Separator orientation="vertical" className="h-4" />
+                                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                    <User className="h-4 w-4" />
+                                    <span className="font-medium">Admin:</span>
+                                    <span>{storeDetails.adminName}</span>
+                                </div>
+                            </>
+                        )}
                     </div>
+
+                    {/* Right: Stats + Actions */}
                     {selectedStoreId && (
-                        <Button
-                            variant="default"
-                            size="sm"
-                            onClick={fetchInventory}
-                            disabled={inventoryLoading}
-                        >
-                            <RefreshCw className={`h-4 w-4 ${inventoryLoading ? 'animate-spin' : ''} md:mr-2`} />
-                            <span className="hidden md:inline">Refresh</span>
-                        </Button>
+                        <div className="flex items-center gap-4">
+                            <div className="hidden md:flex items-center gap-4 text-sm">
+                                <StatBadge color="green" label="In Stock" value={inStockCount} />
+                                <StatBadge color="amber" label="Low" value={lowStockCount} />
+                                <StatBadge color="red" label="Out" value={outOfStockCount} />
+                            </div>
+
+                            <Separator orientation="vertical" className="h-6 hidden md:block" />
+
+                            <Button variant="ghost" size="sm" onClick={fetchInventory} disabled={inventoryLoading}>
+                                <RefreshCw className={cn("h-4 w-4", inventoryLoading && "animate-spin")} />
+                            </Button>
+                        </div>
                     )}
                 </div>
             </div>
 
-            {/* Main Content */}
-            <div className="flex-1 overflow-y-auto">
-                <div className="container mx-auto py-6 px-4">
-
-                    {/* Store Information */}
-                    {selectedStoreId && (
-                        <StoreInfoCard storeId={selectedStoreId} />
-                    )}
-
-                    <div className="space-y-6 mt-6">
-                        {/* Store Selector & Filters - Horizontal on desktop, Vertical on mobile */}
-                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                            {/* Store Selector */}
-                            <Card className="hover:shadow-lg transition-shadow">
-                                <CardHeader>
-                                    <CardTitle>Select Store</CardTitle>
-                                    <CardDescription>
-                                        Choose a store to view and manage its inventory
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <StoreSelector
-                                        selectedStoreId={selectedStoreId}
-                                        onStoreChange={setSelectedStoreId}
-                                        userRole={role}
-                                    />
-                                </CardContent>
-                            </Card>
-
-                            {/* Inventory Filters */}
-                            {selectedStoreId && (
-                                <InventoryFilters
-                                    onFilterChange={setFilters}
-                                    categories={categories}
-                                />
-                            )}
+            {/* Unified Filter Bar - Phase 2 */}
+            {selectedStoreId && (
+                <div className="shrink-0 border-b bg-muted/30 px-6 py-3">
+                    <div className="flex items-center gap-4 flex-wrap">
+                        {/* Search */}
+                        <div className="relative flex-1 min-w-[300px]">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search products, SKU..."
+                                className="pl-9 h-9"
+                                value={filters.search}
+                                onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+                            />
                         </div>
 
+                        {/* Quick filters */}
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground hidden sm:inline">Quick:</span>
+                            <Button
+                                variant={filters.stockStatus === 'all' ? 'default' : 'outline'}
+                                size="sm"
+                                className="h-9"
+                                onClick={() => setFilters({ ...filters, stockStatus: 'all' })}
+                            >
+                                All
+                            </Button>
+                            <Button
+                                variant={filters.stockStatus === 'low-stock' ? 'default' : 'outline'}
+                                size="sm"
+                                className="h-9"
+                                onClick={() => setFilters({ ...filters, stockStatus: 'low-stock' })}
+                            >
+                                <AlertTriangle className="h-3 w-3 sm:mr-1" />
+                                <span className="hidden sm:inline">Low</span>
+                            </Button>
+                            <Button
+                                variant={filters.stockStatus === 'out-of-stock' ? 'default' : 'outline'}
+                                size="sm"
+                                className="h-9"
+                                onClick={() => setFilters({ ...filters, stockStatus: 'out-of-stock' })}
+                            >
+                                <XCircle className="h-3 w-3 sm:mr-1" />
+                                <span className="hidden sm:inline">Out</span>
+                            </Button>
+                        </div>
 
-
-                        {/* Inventory Table */}
-                        {selectedStoreId && (
-                            <Card className="hover:shadow-lg transition-shadow">
-                                <CardHeader>
-                                    <CardTitle>Inventory List</CardTitle>
-                                    <CardDescription>
-                                        View stock levels and update inventory
-                                    </CardDescription>
-                                </CardHeader>
-                                <CardContent>
-                                    <InventoryTable
-                                        storeId={selectedStoreId}
-                                        inventories={inventories}
-                                        loading={inventoryLoading}
-                                        onRefresh={fetchInventory}
-                                    />
-                                </CardContent>
-                            </Card>
-                        )}
+                        {/* Advanced filters */}
+                        <AdvancedFiltersPopover
+                            filters={filters}
+                            categories={categories}
+                            onFilterChange={setFilters}
+                            activeCount={activeFilterCount}
+                        />
                     </div>
+                </div>
+            )}
+
+            {/* Table - Immediate visibility */}
+            <div className="flex-1 overflow-y-auto">
+                <div className="container mx-auto py-6 px-4">
+                    {selectedStoreId && (
+                        <Card className="hover:shadow-lg transition-shadow">
+                            <CardHeader>
+                                <CardTitle>Inventory List</CardTitle>
+                                <CardDescription>
+                                    View stock levels and update inventory
+                                </CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <InventoryTable
+                                    storeId={selectedStoreId}
+                                    inventories={inventories}
+                                    loading={inventoryLoading}
+                                    onRefresh={fetchInventory}
+                                />
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
             </div>
         </div>
