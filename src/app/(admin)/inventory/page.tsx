@@ -45,6 +45,7 @@ interface FilterState {
 
 export default function InventoryPage() {
     const [role, setRole] = useState<string>('');
+    const [assignedStoreId, setAssignedStoreId] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [selectedStoreId, setSelectedStoreId] = useState<string | null>(null);
     const [inventories, setInventories] = useState<InventoryItem[]>([]);
@@ -62,7 +63,13 @@ export default function InventoryPage() {
         const fetchRole = async () => {
             try {
                 const response = await api.get('/auth/dashboard');
-                setRole(response.data.user.role);
+                const userData = response.data.user;
+                setRole(userData.role);
+
+                // For STORE_ADMIN, get assigned store
+                if (userData.role === 'STORE_ADMIN') {
+                    setAssignedStoreId(userData.assignedStoreId || null);
+                }
             } catch (error) {
                 console.error('Error fetching role:', error);
                 router.push('/');
@@ -133,6 +140,33 @@ export default function InventoryPage() {
             <div className="flex items-center justify-center min-h-screen">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span>Loading...</span>
+            </div>
+        );
+    }
+
+    // Check if STORE_ADMIN has assigned store
+    if (role === 'STORE_ADMIN' && !assignedStoreId) {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <Card className="w-full max-w-md">
+                    <CardHeader>
+                        <div className="flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5 text-amber-500" />
+                            <CardTitle>No Store Assigned</CardTitle>
+                        </div>
+                        <CardDescription>
+                            You haven't been assigned to any store yet.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                        <p className="text-sm text-muted-foreground">
+                            Please contact your Super Admin to assign you to a store before you can access inventory management.
+                        </p>
+                        <Button onClick={() => router.push('/dashboard')} className="w-full">
+                            Go to Dashboard
+                        </Button>
+                    </CardContent>
+                </Card>
             </div>
         );
     }

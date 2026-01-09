@@ -14,10 +14,12 @@ import { ProductDialog } from "@/components/products/ProductDialog";
 import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
 import { VariantManagementPanel } from "@/components/products/VariantManagementPanel";
 import { toast } from "sonner";
+import api from "@/lib/api/axios";
 
 export default function ProductsPage() {
   const router = useRouter();
-  const [currentRole] = useState<"SUPER_ADMIN" | "STORE_ADMIN">("SUPER_ADMIN");
+  const [currentRole, setCurrentRole] = useState<"SUPER_ADMIN" | "STORE_ADMIN" | "">("");
+  const [roleLoading, setRoleLoading] = useState(true);
   const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -62,11 +64,38 @@ export default function ProductsPage() {
 
   const { categories, fetchCategories } = useCategoryStore();
 
+  // Check role and redirect if not SUPER_ADMIN
+  useEffect(() => {
+    const checkRole = async () => {
+      try {
+        const response = await api.get('/auth/dashboard');
+        const userRole = response.data.user.role;
+
+        if (userRole !== 'SUPER_ADMIN') {
+          toast.error('Access denied. This page is for Super Admin only.');
+          router.push('/dashboard');
+          return;
+        }
+
+        setCurrentRole(userRole);
+      } catch (error) {
+        console.error('Error checking role:', error);
+        router.push('/dashboard');
+      } finally {
+        setRoleLoading(false);
+      }
+    };
+
+    checkRole();
+  }, [router]);
+
   // Fetch data saat component mount
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
-  }, [fetchProducts, fetchCategories]);
+    if (currentRole === 'SUPER_ADMIN') {
+      fetchProducts();
+      fetchCategories();
+    }
+  }, [currentRole, fetchProducts, fetchCategories]);
 
 
 
@@ -223,6 +252,16 @@ export default function ProductsPage() {
     }
   };
 
+  // Show loading while checking role
+  if (roleLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Checking access...</span>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-4">
       {/* Header */}
@@ -307,7 +346,7 @@ export default function ProductsPage() {
         products={filteredProducts}
         categories={categories}
         loading={loading}
-        currentRole={currentRole}
+        currentRole={currentRole as "SUPER_ADMIN" | "STORE_ADMIN"}
         onEdit={handleEdit}
         onDelete={handleDelete}
         onManageVariants={handleManageVariants}

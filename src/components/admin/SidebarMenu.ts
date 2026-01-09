@@ -57,7 +57,7 @@ export const menuItems: IMenuItems[] = [
     name: "Product Management",
     path: "#",
     icon: Box,
-    roles: ["SUPER_ADMIN", "STORE_ADMIN"],
+    roles: ["SUPER_ADMIN"],
     children: [
       {
         name: "Product List",
