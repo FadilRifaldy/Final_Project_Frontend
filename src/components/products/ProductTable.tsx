@@ -4,12 +4,11 @@ import { IProduct } from "@/types/product"
 import { ICategory } from "@/types/category"
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import axios from "axios"
+import api from "@/lib/api/axios"
 
 interface ProductTableProps {
     products: IProduct[];
     categories: ICategory[];
-    loading: boolean;
     currentRole: "SUPER_ADMIN" | "STORE_ADMIN";
     onEdit: (product: IProduct) => void;
     onDelete: (product: IProduct) => void;
@@ -25,7 +24,6 @@ interface ProductTableProps {
 export function ProductTable({
     products,
     categories,
-    loading,
     currentRole,
     onEdit,
     onDelete,
@@ -41,10 +39,7 @@ export function ProductTable({
     useEffect(() => {
         const fetchUserData = async () => {
             try {
-                const response = await axios.get(
-                    "http://localhost:8800/auth/dashboard",
-                    { withCredentials: true }
-                );
+                const response = await api.get('/auth/dashboard');
                 const userData = response.data.user;
                 setRole(userData.role);
             } catch (error) {
@@ -54,7 +49,7 @@ export function ProductTable({
         fetchUserData();
     }, []);
 
-    if (role === "CUSTOMER" || role === "") {
+    if (role === "CUSTOMER") {
         return (
             <p className="text-center p-10">Unauthorized Access</p>
         );
@@ -71,7 +66,7 @@ export function ProductTable({
                         </TableRow>
                     </TableHeader>
                     <TableBody>
-                        {products.length === 0 && !loading ? (
+                        {products.length === 0 ? (
                             <TableRow>
                                 <TableCell
                                     colSpan={4}

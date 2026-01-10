@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { IProduct } from "@/types/product";
 import { Search, X, Loader2 } from "lucide-react";
@@ -45,6 +46,12 @@ export default function ProductsPage() {
   const [selectedProductForVariants, setSelectedProductForVariants] = useState<IProduct | null>(null);
   const [isVariantPanelOpen, setIsVariantPanelOpen] = useState(false);
 
+  // Progress bar state
+  const [progress, setProgress] = useState(0);
+
+  // Track if this is the initial mount to prevent double fetch
+  const isInitialMount = useRef(true);
+
   // Ambil data dan functions dari Zustand stores
   const {
     products,
@@ -65,8 +72,9 @@ export default function ProductsPage() {
   const { categories, fetchCategories } = useCategoryStore();
 
   // Check role and redirect if not SUPER_ADMIN
+  // Check role and fetch data if SUPER_ADMIN
   useEffect(() => {
-    const checkRole = async () => {
+    const checkRoleAndFetchData = async () => {
       try {
         const response = await api.get('/auth/dashboard');
         const userRole = response.data.user.role;
@@ -78,26 +86,43 @@ export default function ProductsPage() {
         }
 
         setCurrentRole(userRole);
+        setRoleLoading(false);
+
+        // Fetch data setelah role verified
+        fetchProducts();
+        fetchCategories();
       } catch (error) {
         console.error('Error checking role:', error);
         router.push('/dashboard');
-      } finally {
         setRoleLoading(false);
       }
     };
 
-    checkRole();
-  }, [router]);
+    checkRoleAndFetchData();
+  }, [router, fetchProducts, fetchCategories]);
 
-  // Fetch data saat component mount
+  // Simulate progress bar animation when loading
   useEffect(() => {
-    if (currentRole === 'SUPER_ADMIN') {
-      fetchProducts();
-      fetchCategories();
+    if (loading) {
+      setProgress(0);
+      const timer = setInterval(() => {
+        setProgress((oldProgress) => {
+          if (oldProgress >= 90) {
+            clearInterval(timer);
+            return 90;
+          }
+          const diff = Math.random() * 10;
+          return Math.min(oldProgress + diff, 90);
+        });
+      }, 200);
+
+      return () => clearInterval(timer);
+    } else {
+      setProgress(100);
+      const timer = setTimeout(() => setProgress(0), 500);
+      return () => clearTimeout(timer);
     }
-  }, [currentRole, fetchProducts, fetchCategories]);
-
-
+  }, [loading]);
 
   // Debounce search query
   useEffect(() => {
@@ -126,6 +151,12 @@ export default function ProductsPage() {
 
   // Reset to page 1 and fetch when filters change
   useEffect(() => {
+    // Skip the first render (initial mount) because fetchProducts is already called in the currentRole useEffect
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+
     fetchProducts(1, itemsPerPage);
   }, [selectedCategoryFilter, debouncedSearch, fetchProducts, itemsPerPage]);
 
@@ -252,12 +283,17 @@ export default function ProductsPage() {
     }
   };
 
-  // Show loading while checking role
+  // Show loading while checking role - CRITICAL: prevent rendering before role verification
   if (roleLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Checking access...</span>
+      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+        <div className="w-full max-w-md space-y-3">
+          <Progress value={progress} className="h-2 [&>div]:bg-amber-500" />
+          <div className="flex items-center justify-center gap-2 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
+            <span>Checking access...</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -328,9 +364,14 @@ export default function ProductsPage() {
 
       {/* Loading state */}
       {loading && (
-        <div className="flex items-center gap-2 text-muted-foreground">
-          <Loader2 className="h-5 w-5 animate-spin" />
-          <span>Loading products...</span>
+        <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
+          <div className="w-full max-w-md space-y-3">
+            <Progress value={progress} className="h-2 [&>div]:bg-amber-500" />
+            <div className="flex items-center justify-center gap-2 text-muted-foreground">
+              <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
+              <span>Loading products...</span>
+            </div>
+          </div>
         </div>
       )}
 
@@ -342,19 +383,20 @@ export default function ProductsPage() {
       )}
 
       {/* Product Table */}
-      <ProductTable
-        products={filteredProducts}
-        categories={categories}
-        loading={loading}
-        currentRole={currentRole as "SUPER_ADMIN" | "STORE_ADMIN"}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onManageVariants={handleManageVariants}
-        currentPage={currentPage}
-        totalPages={totalPages}
-        totalItems={totalItems}
-        onPageChange={handlePageChange}
-      />
+      {!loading && (
+        <ProductTable
+          products={filteredProducts}
+          categories={categories}
+          currentRole={currentRole as "SUPER_ADMIN" | "STORE_ADMIN"}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onManageVariants={handleManageVariants}
+          currentPage={currentPage}
+          totalPages={totalPages}
+          totalItems={totalItems}
+          onPageChange={handlePageChange}
+        />
+      )}
 
       {/* Variant Panel */}
       <Sheet open={isVariantPanelOpen} onOpenChange={setIsVariantPanelOpen}>
