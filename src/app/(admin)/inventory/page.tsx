@@ -111,8 +111,8 @@ export default function InventoryPage() {
                 const response = await api.get(`/stores/${selectedStoreId}`);
                 const store = response.data.data;
 
-                // Get admin name from storeAdmins array
-                const adminName = store.storeAdmins?.[0]?.name || 'No admin assigned';
+                // Get admin name from STORE_ADMIN user assigned to this store
+                const adminName = store.admin?.name || 'No admin assigned';
                 setStoreDetails({ adminName });
             } catch (error) {
                 console.error('Error fetching store details:', error);
@@ -219,8 +219,8 @@ export default function InventoryPage() {
                     {/* Left: Store selector */}
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                            <Store className="h-4 w-4" />
-                            <span>Store:</span>
+
+                            <span>Store details:</span>
                         </div>
                         <StoreSelector
                             selectedStoreId={selectedStoreId}

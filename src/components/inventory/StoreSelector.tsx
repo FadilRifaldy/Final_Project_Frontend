@@ -100,7 +100,37 @@ export default function StoreSelector({
         ? stores
         : stores.filter(s => s.city === selectedCity);
 
-    // Compact mode for inline header
+    // Store Admin - show assigned store only (read-only) - CHECK ROLE FIRST!
+    if (userRole === 'STORE_ADMIN' && stores.length > 0) {
+        const assignedStore = stores[0]; // Assuming first store is assigned
+
+        // Compact mode for STORE_ADMIN
+        if (compact) {
+            return (
+                <div className="flex items-center gap-2 px-2 py-1 rounded-md bg-muted/30">
+                    <Store className="h-3.5 w-3.5 text-muted-foreground" />
+                    <span className="text-sm font-medium">{assignedStore.name}</span>
+                    <span className="text-xs text-muted-foreground">• {assignedStore.city}</span>
+                </div>
+            );
+        }
+
+        // Full mode for STORE_ADMIN
+        return (
+            <div className="space-y-2">
+                <Label htmlFor="store">Store</Label>
+                <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
+                    <Store className="h-4 w-4 text-muted-foreground" />
+                    <div>
+                        <p className="font-medium">{assignedStore.name}</p>
+                        <p className="text-xs text-muted-foreground">{assignedStore.city}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Compact mode for SUPER_ADMIN
     if (compact) {
         return (
             <Select value={selectedStoreId || ''} onValueChange={onStoreChange}>
@@ -115,23 +145,6 @@ export default function StoreSelector({
                     ))}
                 </SelectContent>
             </Select>
-        );
-    }
-
-    // Store Admin - show assigned store only (read-only)
-    if (userRole === 'STORE_ADMIN' && stores.length > 0) {
-        const assignedStore = stores[0]; // Assuming first store is assigned
-        return (
-            <div className="space-y-2">
-                <Label htmlFor="store">Store</Label>
-                <div className="flex items-center gap-2 p-3 border rounded-md bg-muted/50">
-                    <Store className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                        <p className="font-medium">{assignedStore.name}</p>
-                        <p className="text-xs text-muted-foreground">{assignedStore.city}</p>
-                    </div>
-                </div>
-            </div>
         );
     }
 
