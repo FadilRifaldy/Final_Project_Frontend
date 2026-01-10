@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import api from '@/lib/api/axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, RefreshCw, Loader2, Search, AlertTriangle, XCircle, Store, User } from 'lucide-react';
+import { RefreshCw, Search, AlertTriangle, XCircle, User } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,8 @@ import InventoryTable from '@/components/inventory/InventoryTable';
 import { StatBadge } from '@/components/inventory/StatBadge';
 import { AdvancedFiltersPopover } from '@/components/inventory/AdvancedFiltersPopover';
 import { ErrorCard } from '@/components/inventory/ErrorCard';
+import { useProgressBar } from '@/hooks/useProgressBar';
+import { LoadingScreen } from '@/components/ui/loading-screen';
 
 interface InventoryItem {
     productVariantId: string;
@@ -63,6 +65,9 @@ export default function InventoryPage() {
         sortBy: 'name-asc'
     });
     const router = useRouter();
+
+    // Progress bar using custom hook
+    const progress = useProgressBar(loading);
 
     // fetch role and assigned store
     useEffect(() => {
@@ -177,12 +182,7 @@ export default function InventoryPage() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                <span>Loading...</span>
-            </div>
-        );
+        return <LoadingScreen progress={progress} message="Loading inventory..." />;
     }
 
     // Check if STORE_ADMIN has assigned store
