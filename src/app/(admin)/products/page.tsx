@@ -2,12 +2,11 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import type { IProduct } from "@/types/product";
-import { Search, X, Loader2 } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useProductStore } from "@/lib/store/productStore";
 import { useCategoryStore } from "@/lib/store/categoryStore";
 import { ProductTable } from "@/components/products/ProductTable";
@@ -16,6 +15,8 @@ import { DeleteProductDialog } from "@/components/products/DeleteProductDialog";
 import { VariantManagementPanel } from "@/components/products/VariantManagementPanel";
 import { toast } from "sonner";
 import api from "@/lib/api/axios";
+import { useProgressBar } from "@/hooks/useProgressBar";
+import { LoadingScreen } from "@/components/ui/loading-screen";
 
 export default function ProductsPage() {
   const router = useRouter();
@@ -46,9 +47,6 @@ export default function ProductsPage() {
   const [selectedProductForVariants, setSelectedProductForVariants] = useState<IProduct | null>(null);
   const [isVariantPanelOpen, setIsVariantPanelOpen] = useState(false);
 
-  // Progress bar state
-  const [progress, setProgress] = useState(0);
-
   // Track if this is the initial mount to prevent double fetch
   const isInitialMount = useRef(true);
 
@@ -70,6 +68,10 @@ export default function ProductsPage() {
   } = useProductStore();
 
   const { categories, fetchCategories } = useCategoryStore();
+
+  // Progress bar using custom hook (after loading is declared)
+  const roleProgress = useProgressBar(roleLoading);
+  const dataProgress = useProgressBar(loading);
 
   // Check role and redirect if not SUPER_ADMIN
   // Check role and fetch data if SUPER_ADMIN
@@ -100,29 +102,6 @@ export default function ProductsPage() {
 
     checkRoleAndFetchData();
   }, [router, fetchProducts, fetchCategories]);
-
-  // Simulate progress bar animation when loading
-  useEffect(() => {
-    if (loading) {
-      setProgress(0);
-      const timer = setInterval(() => {
-        setProgress((oldProgress) => {
-          if (oldProgress >= 90) {
-            clearInterval(timer);
-            return 90;
-          }
-          const diff = Math.random() * 10;
-          return Math.min(oldProgress + diff, 90);
-        });
-      }, 200);
-
-      return () => clearInterval(timer);
-    } else {
-      setProgress(100);
-      const timer = setTimeout(() => setProgress(0), 500);
-      return () => clearTimeout(timer);
-    }
-  }, [loading]);
 
   // Debounce search query
   useEffect(() => {
@@ -285,17 +264,7 @@ export default function ProductsPage() {
 
   // Show loading while checking role - CRITICAL: prevent rendering before role verification
   if (roleLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-        <div className="w-full max-w-md space-y-3">
-          <Progress value={progress} className="h-2 [&>div]:bg-amber-500" />
-          <div className="flex items-center justify-center gap-2 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
-            <span>Checking access...</span>
-          </div>
-        </div>
-      </div>
-    );
+    return <LoadingScreen progress={roleProgress} message="Checking access..." />;
   }
 
   return (
@@ -363,17 +332,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Loading state */}
-      {loading && (
-        <div className="flex flex-col items-center justify-center min-h-screen space-y-4">
-          <div className="w-full max-w-md space-y-3">
-            <Progress value={progress} className="h-2 [&>div]:bg-amber-500" />
-            <div className="flex items-center justify-center gap-2 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin text-amber-500" />
-              <span>Loading products...</span>
-            </div>
-          </div>
-        </div>
-      )}
+      {loading && <LoadingScreen progress={dataProgress} message="Loading products..." />}
 
       {/* Error state */}
       {error && (
