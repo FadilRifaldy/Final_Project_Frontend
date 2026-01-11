@@ -3,9 +3,14 @@ import { z } from "zod";
 export interface ICategory {
     id: string;
     name: string;
-    description?: string;
+    slug: string;
+    description: string | null;
     createdAt: string;
     updatedAt: string;
+    deletedAt: string | null;
+    _count?: {
+        products: number;
+    };
 }
 
 // Schema untuk validasi form Create/Edit
