@@ -20,7 +20,19 @@ export default function AuthCallbackPage() {
         return;
       }
 
-      const res = await socialLogin(session.access_token);
+      const role =
+        (typeof window !== "undefined" &&
+          localStorage.getItem("signup_role")) as
+          | "CUSTOMER"
+          | "STORE_ADMIN"
+          | null;
+
+      const res = await socialLogin(
+        session.access_token,
+        role ?? "CUSTOMER"
+      );
+
+      localStorage.removeItem("signup_role");
 
       if (!res.success) {
         toast.error(res.message ?? "Login Google gagal");
@@ -30,13 +42,24 @@ export default function AuthCallbackPage() {
 
       toast.success("Login Google berhasil");
 
-      // 🔥 INI KUNCI UTAMA
-      router.refresh();   // ⬅️ paksa Navbar fetch ulang user
-      router.replace("/");
+      if (
+        res.user?.role === "SUPER_ADMIN" ||
+        res.user?.role === "STORE_ADMIN"
+      ) {
+        router.replace("/dashboard");
+      } else {
+        router.replace("/");
+      }
+
+      router.refresh();
     };
 
     handleLogin();
   }, [router]);
 
-  return <p className="text-center mt-20">Memproses login Google...</p>;
+  return (
+    <p className="flex justify-center items-center text-center mt-80 text-slate-600">
+      Memproses login Google...
+    </p>
+  );
 }

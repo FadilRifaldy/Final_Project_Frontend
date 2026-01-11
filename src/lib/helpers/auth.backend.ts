@@ -25,6 +25,23 @@ export async function signUpUser(user: IUserRegister) {
   }
 }
 
+export async function signUpStoreAdmin(user: {
+  name: string;
+  email: string;
+  password: string;
+}) {
+  try {
+    const res = await axios.post(
+      `${BASE_URL}/auth/register-store`,
+      user
+    );
+    return res.data;
+  } catch (error) {
+    console.error(error);
+    return { message: "Register Store Admin Failed" };
+  }
+}
+
 export async function loginUser(user: IUserLogin) {
   try {
     const res = await axios.post(`${BASE_URL}/auth/login`, user, {
@@ -420,7 +437,10 @@ export const uploadToCloudinary = async (
   }
 };
 
-export async function socialLogin(accessToken: string): Promise<{
+export async function socialLogin(
+  accessToken: string,
+  role: "CUSTOMER" | "STORE_ADMIN" = "CUSTOMER"
+): Promise<{
   success: boolean;
   message?: string;
   user?: IUser;
@@ -428,10 +448,15 @@ export async function socialLogin(accessToken: string): Promise<{
   try {
     const { data } = await axios.post(
       `${process.env.NEXT_PUBLIC_API_URL}/auth/social-login`,
-      { accessToken },
+      {
+        accessToken,
+        role,
+      },
       {
         withCredentials: true,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+        },
       }
     );
 
@@ -444,7 +469,7 @@ export async function socialLogin(accessToken: string): Promise<{
       return {
         success: false,
         message:
-          error.response?.data?.message ??
+          (error.response?.data as { message?: string })?.message ??
           "Login Google gagal",
       };
     }

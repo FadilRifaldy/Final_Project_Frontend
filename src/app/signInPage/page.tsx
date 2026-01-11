@@ -20,7 +20,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 
 import { toast } from "sonner";
 import { loginUser } from "@/lib/helpers/auth.backend";
@@ -57,7 +57,7 @@ export default function SignInPage() {
     }
 
     toast.success("Login Berhasil");
-    // role-based redirect
+    
     if (res.user.role === "SUPER_ADMIN" || res.user.role === "STORE_ADMIN") {
       router.push("/dashboard");
     } else {
@@ -66,155 +66,192 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4 py-10">
-      <div className="w-full max-w-md bg-white rounded-3xl shadow-lg p-8 md:p-10">
-        {/* Logo */}
-        <div className="flex flex-col items-center mb-8">
-          <div className="w-16 h-16 bg-muted rounded-2xl flex items-center justify-center overflow-hidden">
-            <Image src="/logo.png" alt="Logo" width={64} height={64} />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-orange-50 px-4 py-6">
+      <div className="w-full max-w-md">
+        {/* Main Card */}
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-7">
+          {/* Logo & Title */}
+          <div className="flex flex-col items-center mb-5">
+            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
+              <Image 
+                src="/logo.png" 
+                alt="Logo" 
+                width={56} 
+                height={56}
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold mt-3 text-slate-900">
+              Welcome Back
+            </h1>
+            <p className="text-xs text-slate-500 mt-1">
+              Sign in to continue to your account
+            </p>
           </div>
-          <h1 className="text-xl md:text-2xl font-bold mt-4 text-center">
-            Sign In
-          </h1>
-        </div>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
-            {/* Email */}
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter your email..." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Password */}
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Password</FormLabel>
-                  <FormControl>
-                    <div className="relative">
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Enter your password..."
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-3.5">
+              {/* Email */}
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-slate-700">
+                      Email Address
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="Enter your email..." 
                         {...field}
+                        className="h-10 sm:h-11 border-slate-300 focus-visible:ring-gray-300"
                       />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-2.5 text-muted-foreground"
-                      >
-                        {showPassword ? (
-                          <EyeOff className="w-5 h-5" />
-                        ) : (
-                          <Eye className="w-5 h-5" />
-                        )}
-                      </button>
-                    </div>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Remember + Forgot */}
-            <div className="flex items-center justify-between text-sm">
-              <div className="flex items-center gap-2">
-                <FormField
-                  control={form.control}
-                  name="remember"
-                  render={({ field }) => (
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  )}
-                />
-                <span className="text-muted-foreground">Remember me</span>
+              {/* Password */}
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-slate-700">
+                      Password
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter your password..."
+                          {...field}
+                          className="h-10 sm:h-11 pr-10 border-slate-300 focus-visible:ring-gray-300"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+                        >
+                          {showPassword ? (
+                            <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" />
+                          ) : (
+                            <Eye className="w-4 h-4 sm:w-5 sm:h-5" />
+                          )}
+                        </button>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Remember + Forgot */}
+              <div className="flex items-center justify-between text-xs sm:text-sm">
+                <div className="flex items-center gap-2">
+                  <FormField
+                    control={form.control}
+                    name="remember"
+                    render={({ field }) => (
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        className="border-slate-300"
+                      />
+                    )}
+                  />
+                  <span className="text-slate-600">Remember me</span>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="link"
+                  className="cursor-pointer p-0 h-auto text-amber-600 hover:text-amber-700"
+                  onClick={() => router.push("/reset-password?mode=reset")}
+                >
+                  Forgot password?
+                </Button>
               </div>
 
+              {/* Submit */}
               <Button
-                className="cursor-pointer"
-                variant="link"
-                onClick={() => router.push("/reset-password?mode=reset")}
+                type="submit"
+                disabled={loading}
+                className="w-full h-10 sm:h-11 text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl transition-all cursor-pointer"
               >
-                Forgot password?
+                {loading ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Signing in...
+                  </span>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
-            </div>
 
-            {/* Submit */}
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full text-white bg-amber-500 hover:bg-amber-600 cursor-pointer"
-            >
-              {loading ? "Loading..." : "Masuk"}
-            </Button>
+              {/* Divider */}
+              <div className="flex items-center gap-3 sm:gap-4">
+                <div className="h-px flex-1 bg-slate-200" />
+                <span className="text-slate-400 text-xs font-medium">OR</span>
+                <div className="h-px flex-1 bg-slate-200" />
+              </div>
 
-            {/* Divider */}
-            <div className="flex items-center gap-4">
-              <div className="h-px flex-1 bg-muted-foreground/20" />
-              <span className="text-muted-foreground text-xs">OR</span>
-              <div className="h-px flex-1 bg-muted-foreground/20" />
-            </div>
+              {/* Google Login */}
+              <Button
+                type="button"
+                variant="outline"
+                className="cursor-pointer w-full h-10 sm:h-11 flex items-center justify-center gap-2 border-slate-300 hover:bg-slate-50 transition-colors"
+                onClick={async () => {
+                  const { error } = await supabase.auth.signInWithOAuth({
+                    provider: "google",
+                    options: {
+                      redirectTo: `${window.location.origin}/auth/callback`,
+                    },
+                  });
 
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full flex items-center justify-center gap-2 cursor-pointer"
-              onClick={async () => {
-                const { error } = await supabase.auth.signInWithOAuth({
-                  provider: "google",
-                  options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                  },
-                });
+                  if (error) {
+                    toast.error("Gagal login dengan Google");
+                    console.error(error);
+                  }
+                }}
+              >
+                <Image
+                  src="/images/Google.svg"
+                  alt="Google"
+                  width={20}
+                  height={20}
+                />
+                <span className="text-sm sm:text-base">Continue with Google</span>
+              </Button>
 
-                if (error) {
-                  toast.error("Gagal login dengan Google");
-                  console.error(error);
-                }
-              }}
-            >
-              <Image
-                src="/images/Google.svg"
-                alt="Google"
-                width={20}
-                height={20}
-              />
-              Login dengan Google
-            </Button>
-
-            {/* Register Link */}
-            <p className="text-center text-sm text-muted-foreground mt-2">
-              Don&apos;t have an account?{" "}
-              <Link href="/signUpPage">
-                <span className="text-amber-500 hover:text-amber-600 font-medium hover:underline">
+              {/* Register Link */}
+              <p className="text-center text-xs sm:text-sm text-slate-600 pt-2">
+                Don&apos;t have an account?{" "}
+                <Link 
+                  href="/signUpPage"
+                  className="text-amber-600 hover:text-amber-700 font-semibold hover:underline"
+                >
                   Sign Up
-                </span>{" "}
-              </Link>
-              here
-            </p>
+                </Link>
+                {" "}here
+              </p>
 
-            {/* Back */}
-            <p className="text-center text-sm text-muted-foreground mt-1">
-              ←{" "}
-              <Link href="/" className="hover:underline">
-                Home
-              </Link>
-            </p>
-          </form>
-        </Form>
+              {/* Back to Home */}
+              <div className="flex items-center justify-center pt-2 border-t border-slate-100">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={() => router.push("/")}
+                  className="cursor-pointer text-slate-500 hover:text-slate-700 hover:bg-slate-50"
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  Back to Home
+                </Button>
+              </div>
+            </form>
+          </Form>
+        </div>
       </div>
     </div>
   );
