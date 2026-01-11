@@ -46,6 +46,18 @@ export const menuItems: IMenuItems[] = [
     path: "/stores",
     icon: Store,
     roles: ["SUPER_ADMIN"],
+    children: [
+      {
+        name: "Store List",
+        path: "/stores",
+        icon: Barcode,
+      },
+      {
+        name: "Assign Store Admin",
+        path: "/stores/store-admin",
+        icon: FolderTree,
+      },
+    ],
   },
   {
     name: "Edit Store Info",
