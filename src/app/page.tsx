@@ -1,9 +1,8 @@
 import { CategorySection } from "@/components/categorySection";
 import HeroCarousel from "@/components/heroCarousel";
 import OurStore from "@/components/ourStore";
-import { ProductListMock } from "@/components/productList";
+import { ProductList } from "@/components/productList";
 import StoreInfoBar from "@/components/storeInfoBar";
-import Image from "next/image";
 import Navbar from "@/components/navbar";
 import Footer from "@/components/footer";
 
@@ -13,12 +12,12 @@ export default function Home() {
       <main>
         <Navbar />
         <StoreInfoBar storeName="FreshMart East" />
-        <HeroCarousel/>
-        <CategorySection/>
-        <ProductListMock/>
-        
-        <OurStore/>
-        <Footer/>
+        <HeroCarousel />
+        <CategorySection />
+        <ProductList />
+
+        <OurStore />
+        <Footer />
 
       </main>
 

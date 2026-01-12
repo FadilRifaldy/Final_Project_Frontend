@@ -4,6 +4,13 @@ export interface IProduct {
     description: string;
     images: IProductImage[];
     categoryId: string;
+    category?: {
+        id: string;
+        name: string;
+        slug: string;
+        description?: string;
+    };
+    variants?: IProductVariant[];
     createdAt: string;
     updatedAt: string;
     isActive: boolean;
