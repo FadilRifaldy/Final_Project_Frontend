@@ -1,6 +1,6 @@
 import axios from "axios";
 import api from "../api/axios";
-import { IProduct, IProductImage } from "@/types/product";
+import { IProduct, IProductImage, IProductVariant } from "@/types/product";
 
 // Pagination response type
 interface PaginationMeta {
@@ -32,6 +32,37 @@ export default async function getProducts(
   } catch (error) {
     if (axios.isAxiosError(error)) {
       const message = error.response?.data?.message || "Failed to get products";
+      throw new Error(message);
+    }
+    throw new Error("Unexpected error occurred");
+  }
+}
+
+export async function getProductById(id: string): Promise<IProduct> {
+  try {
+    const response = await api.get(`/api/products/${id}`);
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message || "Failed to get product by ID";
+      throw new Error(message);
+    }
+    throw new Error("Unexpected error occurred");
+  }
+}
+
+export async function getVariantsByProductId(
+  productId: string
+): Promise<IProductVariant[]> {
+  try {
+    const response = await api.get(`/api/products/var/all/${productId}`);
+    return response.data.data;
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
+      const message =
+        error.response?.data?.message ||
+        "Failed to get variants by product ID";
       throw new Error(message);
     }
     throw new Error("Unexpected error occurred");

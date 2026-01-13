@@ -1,13 +1,6 @@
 import axios from "axios";
 import api from "../api/axios";
 
-// ==========================================
-// INVENTORY API CALLS
-// ==========================================
-
-/**
- * Get inventory list untuk store tertentu
- */
 export async function getInventoryByStore(
     storeId: string,
     page: number = 1,
