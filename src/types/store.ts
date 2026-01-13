@@ -13,3 +13,20 @@ export interface IStore {
   createdAt?: string;
   updatedAt?: string;
 }
+
+export interface IStoreProduct {
+  id: string;
+  productId: string;
+  name: string;
+  variantName: string;
+  fullName: string;
+  price: number;
+  image: string | null;
+  stock: number;
+  reserved: number;
+  availableStock: number;
+  sku: string;
+  category: string;
+  categoryId: string;
+  sold: number;
+}
