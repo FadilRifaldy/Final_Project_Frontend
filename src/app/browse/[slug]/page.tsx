@@ -33,24 +33,22 @@ export default function ProductDetailPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // Get store ID from localStorage (assumed to be set from homepage)
+    // Get store ID from localStorage (optional - for stock checking)
     const [storeId, setStoreId] = useState<string>("");
 
     useEffect(() => {
-        // Get store ID from localStorage
+        // Try to get store ID from localStorage
+        // This is optional - product page will work without it
         const savedStoreId = localStorage.getItem("selectedStoreId");
         if (savedStoreId) {
             setStoreId(savedStoreId);
-        } else {
-            // If no store selected, redirect to homepage
-            // For now, we'll just show an error
-            setError("Silakan pilih toko terlebih dahulu");
-            setLoading(false);
         }
+        // Note: If no store selected, product page will still work
+        // but stock info won't be available
     }, []);
 
     useEffect(() => {
-        if (!slug || !storeId) return;
+        if (!slug) return; // Only need slug, not storeId
 
         const fetchProductData = async () => {
             try {
@@ -84,17 +82,20 @@ export default function ProductDetailPage() {
 
                 const productId = matchedProduct.id;
 
-                // Fetch full product details with variants
+                // Fetch full product details
                 const productData = await getProductById(productId);
                 setProduct(productData);
 
-                // Fetch variants
+                // Fetch variants with assignedImages (separate call for complete data)
                 const variantsData = await getVariantsByProductId(productId);
-                setVariants(variantsData);
 
-                // Select first variant by default
-                if (variantsData.length > 0) {
+                // Use variants from separate API call (includes assignedImages)
+                if (variantsData && variantsData.length > 0) {
+                    setVariants(variantsData);
+                    // Select first variant by default
                     setSelectedVariantId(variantsData[0].id);
+                } else {
+                    setVariants([]);
                 }
             } catch (err: any) {
                 console.error("Error fetching product:", err);
@@ -105,11 +106,21 @@ export default function ProductDetailPage() {
         };
 
         fetchProductData();
-    }, [slug, storeId]);
+    }, [slug]); // Removed storeId dependency
 
-    // Fetch stock info when variant changes
+    // Fetch stock info when variant changes (only if store is selected)
     useEffect(() => {
-        if (!selectedVariantId || !storeId) return;
+        if (!selectedVariantId) return;
+
+        // If no store selected, set default state
+        if (!storeId) {
+            setStockInfo({
+                available: false,
+                reason: "Pilih toko terlebih dahulu untuk melihat ketersediaan stok",
+                inventory: null,
+            });
+            return;
+        }
 
         const fetchStockInfo = async () => {
             try {

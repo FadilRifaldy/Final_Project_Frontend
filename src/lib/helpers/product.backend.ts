@@ -56,7 +56,7 @@ export async function getVariantsByProductId(
   productId: string
 ): Promise<IProductVariant[]> {
   try {
-    const response = await api.get(`/api/product-variants/all/${productId}`);
+    const response = await api.get(`/api/products/var/all/${productId}`);
     return response.data.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
