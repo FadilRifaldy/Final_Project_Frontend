@@ -42,6 +42,35 @@ export async function signUpStoreAdmin(user: {
   }
 }
 
+// // ver1
+// export async function loginUser(user: IUserLogin) {
+//   try {
+//     const res = await axios.post(`${BASE_URL}/auth/login`, user, {
+//       withCredentials: true,
+//       headers: { "Content-Type": "application/json" },
+//     });
+
+//     return {
+//       success: true,
+//       user: res.data.user,
+//       message: res.data.message || "Login success",
+//     };
+//   } catch (error: unknown) {
+//     if (axios.isAxiosError(error)) {
+//       return {
+//         success: false,
+//         message: error.response?.data?.message || "Login Failed",
+//       };
+//     }
+
+//     return {
+//       success: false,
+//       message: "Unexpected error occurred",
+//     };
+//   }
+// }
+
+// ver2
 export async function loginUser(user: IUserLogin) {
   try {
     const res = await axios.post(`${BASE_URL}/auth/login`, user, {
@@ -49,13 +78,32 @@ export async function loginUser(user: IUserLogin) {
       headers: { "Content-Type": "application/json" },
     });
 
+    // Pastikan response success
+    if (!res.data) {
+      return {
+        success: false,
+        message: "Invalid response from server",
+      };
+    }
+
     return {
       success: true,
       user: res.data.user,
       message: res.data.message || "Login success",
     };
   } catch (error: unknown) {
+    console.error("Login error:", error); // Debug log
+
     if (axios.isAxiosError(error)) {
+      // Network error atau CORS
+      if (!error.response) {
+        return {
+          success: false,
+          message: "Network error. Please check your connection.",
+        };
+      }
+
+      // Server error dengan message
       return {
         success: false,
         message: error.response?.data?.message || "Login Failed",
