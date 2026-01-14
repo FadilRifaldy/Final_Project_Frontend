@@ -103,10 +103,17 @@ export const menuItems: IMenuItems[] = [
     roles: ["SUPER_ADMIN", "STORE_ADMIN"],
   },
   {
-    name: "Sales Report",
+    name: "Report",
     path: "/reports",
     icon: ChartArea,
     roles: ["SUPER_ADMIN", "STORE_ADMIN"],
+    children: [
+      {
+        name: "Stock Report",
+        path: "/reports/stock",
+        icon: ChartArea,
+      },
+    ],
   },
   {
     name: "Settings",

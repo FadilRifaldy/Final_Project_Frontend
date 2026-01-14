@@ -1,6 +1,6 @@
 "use client";
 
-import axios from "axios";
+import api from "@/lib/api/axios";
 import { useEffect, useState } from "react";
 import { LogOut, ChevronDown } from "lucide-react";
 import Link from "next/link";
@@ -49,14 +49,35 @@ export default function Sidebar({
   const pathname = usePathname();
   const router = useRouter();
 
+  // State untuk collapsible menus (persist di localStorage)
+  const [openMenus, setOpenMenus] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("sidebar-open-menus");
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
+
+  // Save ke localStorage setiap kali openMenus berubah
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("sidebar-open-menus", JSON.stringify(openMenus));
+    }
+  }, [openMenus]);
+
+  // Toggle menu open/close
+  const toggleMenu = (menuName: string) => {
+    setOpenMenus(prev => ({
+      ...prev,
+      [menuName]: !prev[menuName]
+    }));
+  };
+
   // Ambil data user dari backend
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(
-          "http://localhost:8800/auth/dashboard",
-          { withCredentials: true }
-        );
+        const response = await api.get("/auth/dashboard");
         const userData = response.data.user;
         setRole(userData.role);
         setUser({
@@ -95,11 +116,7 @@ export default function Sidebar({
   // Handle logout
   const handleLogout = async () => {
     try {
-      await axios.post(
-        "http://localhost:8800/auth/logout",
-        {},
-        { withCredentials: true }
-      );
+      await api.post("/auth/logout", {});
       router.push("/signInPage");
     } catch (error) {
       console.error("Error logging out:", error);
@@ -205,7 +222,8 @@ export default function Sidebar({
             return (
               <Collapsible
                 key={item.name}
-                defaultOpen={isChildActive}
+                open={openMenus[item.name] ?? isChildActive}
+                onOpenChange={() => toggleMenu(item.name)}
                 className="group"
               >
                 <CollapsibleTrigger
