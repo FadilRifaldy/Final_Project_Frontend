@@ -12,6 +12,8 @@ import {
   FolderTree,
   Barcode,
   Package,
+  ShoppingCart,
+  Users
 } from "lucide-react";
 
 export interface ISubMenuItem {
@@ -53,6 +55,11 @@ export const menuItems: IMenuItems[] = [
         icon: Barcode,
       },
       {
+        name: "Admin List",
+        path: "/stores/admin-list",
+        icon: Users,
+      },
+      {
         name: "Assign Store Admin",
         path: "/stores/store-admin",
         icon: FolderTree,
@@ -60,10 +67,10 @@ export const menuItems: IMenuItems[] = [
     ],
   },
   {
-    name: "Edit Store Info",
-    path: "/stores/edit",
-    icon: MonitorCog,
-    roles: ["STORE_ADMIN"],
+    name: "Order Management",
+    path: "/orders",
+    icon: ShoppingCart,
+    roles: ["SUPER_ADMIN", "STORE_ADMIN"],
   },
   {
     name: "Product Management",
