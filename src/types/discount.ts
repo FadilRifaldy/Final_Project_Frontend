@@ -16,9 +16,15 @@ export interface Discount {
     startDate: Date | string;
     endDate: Date | string;
     isActive: boolean;
+    storeId?: string | null; // null = global, filled = specific store
+    createdBy: string; // User ID yang membuat
     createdAt: Date | string;
     updatedAt: Date | string;
     productDiscounts?: ProductDiscount[];
+    store?: {
+        id: string;
+        name: string;
+    } | null;
 }
 
 export interface ProductDiscount {
@@ -30,7 +36,10 @@ export interface ProductDiscount {
         id: string;
         name: string;
         price: number;
-        // Add other product variant fields as needed
+        product?: {
+            id: string;
+            name: string;
+        };
     };
 }
 
@@ -47,6 +56,7 @@ export interface CreateDiscountInput {
     productVariantIds?: string[];
     startDate: string;
     endDate: string;
+    storeId?: string; // null/undefined = global, filled = specific store
 }
 
 export interface UpdateDiscountInput {
