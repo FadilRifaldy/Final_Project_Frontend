@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import api from "@/lib/api/axios";
 import { useDiscountStore } from "@/lib/store/discountStore";
-import { Discount } from "@/types/discount";
+import { Discount, CreateDiscountInput } from "@/types/discount";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -22,13 +23,39 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Plus, MoreVertical, Pencil, Trash2, Power, Search } from "lucide-react";
 import { format } from "date-fns";
+import { CreateDiscountSheet } from "@/components/discounts/CreateDiscountSheet";
 
 export default function DiscountsPage() {
-    const { discounts, isLoading, fetchDiscounts, toggleStatus, deleteDiscount } =
+    const { discounts, isLoading, fetchDiscounts, toggleStatus, deleteDiscount, createDiscount } =
         useDiscountStore();
     const [searchQuery, setSearchQuery] = useState("");
+    const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
+
+    // User info
+    const [userRole, setUserRole] = useState<"SUPER_ADMIN" | "STORE_ADMIN">("SUPER_ADMIN");
+    const [userStoreId, setUserStoreId] = useState<string>();
 
     useEffect(() => {
+        // Fetch user info
+        const fetchUserInfo = async () => {
+            try {
+                const response = await api.get("/auth/dashboard");
+                const userData = response.data.user;
+
+                setUserRole(userData.role);
+
+                // If Store Admin, get their store ID
+                if (userData.role === "STORE_ADMIN" && userData.assignedStoreId) {
+                    setUserStoreId(userData.assignedStoreId);
+                }
+
+                console.log("User info:", userData); // Debug log
+            } catch (error) {
+                console.error("Error fetching user info:", error);
+            }
+        };
+
+        fetchUserInfo();
         fetchDiscounts();
     }, [fetchDiscounts]);
 
@@ -53,6 +80,8 @@ export default function DiscountsPage() {
         return `Rp ${discount.discountValue.toLocaleString("id-ID")}`;
     };
 
+    // handler
+
     const handleToggleStatus = async (id: string, currentStatus: boolean) => {
         try {
             await toggleStatus(id, !currentStatus);
@@ -71,6 +100,40 @@ export default function DiscountsPage() {
         }
     };
 
+    const handleCreateDiscount = async (data: CreateDiscountInput) => {
+        try {
+            await createDiscount(data);
+            setIsCreateSheetOpen(false);
+        } catch (error) {
+            console.error("Failed to create discount:", error);
+            throw error; // Re-throw untuk ditangani di Sheet component
+        }
+    };
+
+    // Check if STORE_ADMIN has assigned store
+    if (userRole === "STORE_ADMIN" && !userStoreId) {
+        return (
+            <div className="flex items-center justify-center min-h-screen p-6">
+                <div className="max-w-md w-full space-y-4 text-center">
+                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                        <h2 className="text-xl font-bold text-yellow-900 mb-2">
+                            No Store Assigned
+                        </h2>
+                        <p className="text-yellow-700 mb-4">
+                            You haven't been assigned to any store yet. Please contact your Super Admin to assign you to a store before you can manage discounts.
+                        </p>
+                        <Button
+                            onClick={() => window.location.href = '/dashboard'}
+                            variant="outline"
+                        >
+                            Go to Dashboard
+                        </Button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 space-y-6">
             {/* Header */}
@@ -81,7 +144,7 @@ export default function DiscountsPage() {
                         Manage your product and cart discounts
                     </p>
                 </div>
-                <Button>
+                <Button onClick={() => setIsCreateSheetOpen(true)}>
                     <Plus className="w-4 h-4 mr-2" />
                     Create Discount
                 </Button>
@@ -100,7 +163,7 @@ export default function DiscountsPage() {
                 </div>
             </div>
 
-            {/* Table */}
+            {/* Table discounts */}
             <div className="border rounded-lg">
                 <Table>
                     <TableHeader>
@@ -108,6 +171,8 @@ export default function DiscountsPage() {
                             <TableHead>Name</TableHead>
                             <TableHead>Type</TableHead>
                             <TableHead>Value</TableHead>
+                            <TableHead>Products</TableHead>
+                            {userRole === "SUPER_ADMIN" && <TableHead>Store</TableHead>}
                             <TableHead>Period</TableHead>
                             <TableHead>Status</TableHead>
                             <TableHead className="w-[70px]"></TableHead>
@@ -116,13 +181,13 @@ export default function DiscountsPage() {
                     <TableBody>
                         {isLoading ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8">
+                                <TableCell colSpan={userRole === "SUPER_ADMIN" ? 8 : 7} className="text-center py-8">
                                     Loading...
                                 </TableCell>
                             </TableRow>
                         ) : filteredDiscounts.length === 0 ? (
                             <TableRow>
-                                <TableCell colSpan={6} className="text-center py-8">
+                                <TableCell colSpan={userRole === "SUPER_ADMIN" ? 8 : 7} className="text-center py-8">
                                     No discounts found
                                 </TableCell>
                             </TableRow>
@@ -143,6 +208,39 @@ export default function DiscountsPage() {
                                     <TableCell className="font-medium">
                                         {getDiscountValueDisplay(discount)}
                                     </TableCell>
+                                    <TableCell>
+                                        {(discount.type === "PRODUCT" || discount.type === "BUY_ONE_GET_ONE") ? (
+                                            discount.productDiscounts && discount.productDiscounts.length > 0 ? (
+                                                <div className="space-y-1">
+                                                    {discount.productDiscounts.slice(0, 2).map((pd) => (
+                                                        <div key={pd.id} className="text-xs text-muted-foreground">
+                                                            {pd.productVariant?.product?.name || pd.productVariant?.name}
+                                                        </div>
+                                                    ))}
+                                                    {discount.productDiscounts.length > 2 && (
+                                                        <div className="text-xs text-muted-foreground font-medium">
+                                                            +{discount.productDiscounts.length - 2} more
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-muted-foreground">-</span>
+                                            )
+                                        ) : (
+                                            <span className="text-xs text-muted-foreground">-</span>
+                                        )}
+                                    </TableCell>
+                                    {userRole === "SUPER_ADMIN" && (
+                                        <TableCell>
+                                            {discount.store ? (
+                                                <span className="text-sm">{discount.store.name}</span>
+                                            ) : (
+                                                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                                    All Stores
+                                                </Badge>
+                                            )}
+                                        </TableCell>
+                                    )}
                                     <TableCell>
                                         <div className="text-sm">
                                             <div>
@@ -197,6 +295,15 @@ export default function DiscountsPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            {/* Create Discount Sheet */}
+            <CreateDiscountSheet
+                open={isCreateSheetOpen}
+                onOpenChange={setIsCreateSheetOpen}
+                onSubmit={handleCreateDiscount}
+                userRole={userRole}
+                userStoreId={userStoreId}
+            />
         </div>
     );
 }

@@ -57,6 +57,7 @@ export async function createDiscount(data: {
     productVariantIds?: string[];
     startDate: string;
     endDate: string;
+    storeId?: string; // For scope control
 }) {
     try {
         const response = await api.post("/api/discounts", data);
