@@ -25,7 +25,7 @@ interface ProductState {
     description: string,
     categoryId: string,
     images?: string[]
-  ) => Promise<void>;
+  ) => Promise<IProduct | undefined>;
   updateProduct: (
     id: string,
     name: string,
@@ -33,7 +33,7 @@ interface ProductState {
     categoryId: string,
     images?: string[],
     isActive?: boolean
-  ) => Promise<void>;
+  ) => Promise<IProduct | undefined>;
   deleteProduct: (id: string) => Promise<void>;
   uploadProductImages: (productId: string, files: File[]) => Promise<void>;
 
@@ -96,9 +96,10 @@ export const useProductStore = create<ProductState>((set, get) => ({
         images
       );
       set((state) => ({
-        products: [...state.products, newProduct],
+        products: [newProduct, ...state.products], // Put new one at top
         loading: false,
       }));
+      return newProduct;
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to add product";
@@ -135,6 +136,7 @@ export const useProductStore = create<ProductState>((set, get) => ({
         ),
         loading: false,
       }));
+      return updatedProduct;
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Failed to update product";
