@@ -154,7 +154,10 @@ export function ImageUploader({
                         <p className="text-sm font-medium">
                             Drag & drop images atau klik untuk pilih
                         </p>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 mt-1 uppercase tracking-wider font-semibold">
+                            JPG, JPEG, PNG, GIF, WEBP
+                        </p>
+                        <p className="text-[11px] text-gray-400 mt-0.5">
                             Max {maxFiles} files, {maxSizeMB}MB per file
                         </p>
                     </div>

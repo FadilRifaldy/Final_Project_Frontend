@@ -1,4 +1,4 @@
-'use client'
+"use client"
 
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -185,9 +185,9 @@ export default function VariantImageSelector({
                                                 {/* Primary Badge */}
                                                 {isPrimary && (
                                                     <div className="absolute top-2 left-2">
-                                                        <Badge className="bg-yellow-500 hover:bg-yellow-600">
-                                                            <Star className="h-3 w-3 mr-1 fill-current" />
-                                                            Primary
+                                                        <Badge className="bg-primary text-primary-foreground border-none px-2 shadow-lg scale-90 origin-top-left transition-transform">
+                                                            <ImageIcon className="h-3 w-3 mr-1" />
+                                                            Thumbnail
                                                         </Badge>
                                                     </div>
                                                 )}
@@ -195,20 +195,22 @@ export default function VariantImageSelector({
 
                                             {/* Set Primary Button */}
                                             {isSelected && !isPrimary && (
-                                                <Button
-                                                    size="sm"
-                                                    variant="outline"
-                                                    className="w-full mt-2"
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        handleSetPrimary(image.id);
-                                                    }}
-                                                >
-                                                    <Star className="h-3 w-3 mr-1" />
-                                                    Set as Primary
-                                                </Button>
+                                                <div className="px-2 pb-2">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="secondary"
+                                                        className="w-full text-[11px] h-7"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            handleSetPrimary(image.id);
+                                                        }}
+                                                    >
+                                                        Set as Thumbnail
+                                                    </Button>
+                                                </div>
                                             )}
                                         </div>
+
                                     );
                                 })}
                             </div>
@@ -220,7 +222,7 @@ export default function VariantImageSelector({
                             </p>
                             {primaryImageId && (
                                 <p className="text-yellow-600 dark:text-yellow-500">
-                                    ⭐ Primary image will be used as variant thumbnail
+                                    Primary image will be used as variant thumbnail
                                 </p>
                             )}
                         </div>
