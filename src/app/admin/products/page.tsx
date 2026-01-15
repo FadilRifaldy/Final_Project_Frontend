@@ -86,8 +86,8 @@ export default function ProductsPage() {
         fetchProducts();
         fetchCategories();
       } catch (error) {
-        console.error('Error checking role:', error);
-        router.push('/dashboard');
+        toast.error("Unauthorized access");
+        router.push('/admin/dashboard');
         setRoleLoading(false);
       }
     };

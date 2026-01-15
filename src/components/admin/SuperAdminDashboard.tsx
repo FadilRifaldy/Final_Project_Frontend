@@ -111,7 +111,7 @@ export default function SuperAdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <Link href="/products/categories">
+            <Link href="/admin/products/categories">
               <Button className="w-full justify-between group">
                 Kelola Kategori
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -134,7 +134,7 @@ export default function SuperAdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <Link href="/products">
+            <Link href="/admin/products">
               <Button variant="outline" className="w-full justify-between group border-blue-200 hover:bg-blue-50 hover:text-blue-600 text-blue-600">
                 Kelola Produk
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -157,7 +157,7 @@ export default function SuperAdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <Link href="/stores">
+            <Link href="/admin/stores">
               <Button variant="outline" className="w-full justify-between group border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 text-emerald-600">
                 Lihat Daftar Toko
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
@@ -180,7 +180,7 @@ export default function SuperAdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            <Link href="/stores/admin-list">
+            <Link href="/admin/stores/admin-list">
               <Button variant="outline" className="w-full justify-between group border-purple-200 hover:bg-purple-50 hover:text-purple-600 text-purple-600">
                 Kelola Admin
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />

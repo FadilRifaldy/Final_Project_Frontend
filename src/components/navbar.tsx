@@ -160,10 +160,10 @@ export default function Navbar() {
                 <DropdownMenuContent className="w-40">
                   {(user?.role === "SUPER_ADMIN" ||
                     user?.role === "STORE_ADMIN") && (
-                    <DropdownMenuItem onClick={() => router.push("/dashboard")}>
-                      Dashboard
-                    </DropdownMenuItem>
-                  )}
+                      <DropdownMenuItem onClick={() => router.push("/admin/dashboard")}>
+                        Dashboard
+                      </DropdownMenuItem>
+                    )}
 
                   <DropdownMenuItem onClick={() => router.push("/userProfile")}>
                     Profile

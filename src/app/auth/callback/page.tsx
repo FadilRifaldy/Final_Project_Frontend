@@ -23,9 +23,9 @@ export default function AuthCallbackPage() {
       const role =
         (typeof window !== "undefined" &&
           localStorage.getItem("signup_role")) as
-          | "CUSTOMER"
-          | "STORE_ADMIN"
-          | null;
+        | "CUSTOMER"
+        | "STORE_ADMIN"
+        | null;
 
       const res = await socialLogin(
         session.access_token,
@@ -46,7 +46,7 @@ export default function AuthCallbackPage() {
         res.user?.role === "SUPER_ADMIN" ||
         res.user?.role === "STORE_ADMIN"
       ) {
-        router.replace("/dashboard");
+        router.replace("/admin/dashboard");
       } else {
         router.replace("/");
       }

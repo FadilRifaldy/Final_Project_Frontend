@@ -123,7 +123,7 @@ export default function DiscountsPage() {
                             You haven't been assigned to any store yet. Please contact your Super Admin to assign you to a store before you can manage discounts.
                         </p>
                         <Button
-                            onClick={() => window.location.href = '/dashboard'}
+                            onClick={() => window.location.href = '/admin/dashboard'}
                             variant="outline"
                         >
                             Go to Dashboard
