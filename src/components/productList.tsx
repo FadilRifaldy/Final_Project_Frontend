@@ -18,10 +18,9 @@ export function ProductList({
   subtitle = "Discover our selection of fresh groceries",
   limit = 8,
   categoryId,
+  city = "Jakarta", // ← TAMBAH default city
 }: ProductListProps) {
-  const [products, setProducts] = useState<IProduct[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // ... existing state
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -29,7 +28,7 @@ export function ProductList({
         setLoading(true);
         setError(null);
 
-        const response = await getProducts(1, limit);
+        const response = await getProducts(1, limit, city); // ← Pass city
 
         // Filter by category if provided
         let filteredProducts = response.data;
@@ -49,52 +48,9 @@ export function ProductList({
     };
 
     fetchProducts();
-  }, [limit, categoryId]);
+  }, [limit, categoryId, city]); // ← Tambah city ke dependency
 
-  if (error) {
-    return (
-      <section className="py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center p-8 bg-destructive/10 rounded-lg">
-            <p className="text-destructive font-medium">{error}</p>
-          </div>
-        </div>
-      </section>
-    );
-  }
-
-  return (
-    <section id="products" className="py-12 md:py-16">
-      <div className="max-w-7xl mx-auto px-4 space-y-8">
-        {/* Header */}
-        <div>
-          <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-            {title}
-          </h2>
-          <p className="text-muted-foreground mt-1">{subtitle}</p>
-        </div>
-
-        {/* Products Grid */}
-        {loading ? (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {[...Array(limit)].map((_, i) => (
-              <ProductCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center p-8 bg-muted/30 rounded-lg">
-            <p className="text-muted-foreground">Tidak ada produk tersedia</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {products.map((product) => (
-              <ProductCard key={product.id} product={product} />
-            ))}
-          </div>
-        )}
-      </div>
-    </section>
-  );
+  // ... rest of component
 }
 
 // Loading skeleton for product card

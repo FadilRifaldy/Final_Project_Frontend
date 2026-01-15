@@ -11,6 +11,12 @@ export interface IProduct {
         description?: string;
     };
     variants?: IProductVariant[];
+    store?: {
+        id: string;
+        name: string;
+        city: string;
+        address: string;
+    }
     createdAt: string;
     updatedAt: string;
     isActive: boolean;

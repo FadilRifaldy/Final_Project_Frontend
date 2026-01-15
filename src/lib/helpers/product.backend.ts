@@ -19,11 +19,16 @@ interface ProductsResponse {
 
 export default async function getProducts(
   page: number = 1,
-  limit: number = 10
+  limit: number = 10,
+  city?: string
 ): Promise<ProductsResponse> {
   try {
     const response = await api.get("/api/products", {
-      params: { page, limit }
+      params: {
+        page,
+        limit,
+        ...(city && { city }) // ← Include city jika ada
+      }
     });
     return {
       data: response.data.data,
