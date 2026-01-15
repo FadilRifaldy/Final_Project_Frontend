@@ -1,10 +1,10 @@
 import axios from "axios";
 import { ApiResponse } from "@/types/api";
-import { IAddress } from "@/types/address";
+import { Address } from "@/types/address";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
-export async function getAddresses(): Promise<ApiResponse<IAddress[]>> {
+export async function getAddresses(): Promise<ApiResponse<Address[]>> {
   try {
     const res = await axios.get(`${BASE_URL}/addresses`, {
       withCredentials: true,
@@ -26,8 +26,8 @@ export async function getAddresses(): Promise<ApiResponse<IAddress[]>> {
 }
 
 export async function createAddress(
-  data: Partial<IAddress>
-): Promise<ApiResponse<IAddress>> {
+  data: Partial<Address>
+): Promise<ApiResponse<Address>> {
   try {
     const res = await axios.post(`${BASE_URL}/addresses`, data, {
       withCredentials: true,
@@ -46,8 +46,8 @@ export async function createAddress(
 
 export async function updateAddress(
   id: string,
-  data: Partial<IAddress>
-): Promise<ApiResponse<IAddress>> {
+  data: Partial<Address>
+): Promise<ApiResponse<Address>> {
   try {
     const res = await axios.put(`${BASE_URL}/addresses/${id}`, data, {
       withCredentials: true,
@@ -83,7 +83,7 @@ export async function deleteAddress(id: string): Promise<ApiResponse<null>> {
 
 export async function setPrimaryAddress(
   id: string
-): Promise<ApiResponse<IAddress>> {
+): Promise<ApiResponse<Address>> {
   try {
     const res = await axios.patch(
       `${BASE_URL}/addresses/${id}/primary`,
