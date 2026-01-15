@@ -57,9 +57,9 @@ export default function SignInPage() {
     }
 
     toast.success("Login Berhasil");
-    
+
     if (res.user.role === "SUPER_ADMIN" || res.user.role === "STORE_ADMIN") {
-      router.push("/dashboard");
+      router.push("/admin/dashboard");
     } else {
       router.push("/");
     }
@@ -73,10 +73,10 @@ export default function SignInPage() {
           {/* Logo & Title */}
           <div className="flex flex-col items-center mb-5">
             <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
-              <Image 
-                src="/logo.png" 
-                alt="Logo" 
-                width={56} 
+              <Image
+                src="/logo.png"
+                alt="Logo"
+                width={56}
                 height={56}
                 className="w-full h-full object-cover"
               />
@@ -101,8 +101,8 @@ export default function SignInPage() {
                       Email Address
                     </FormLabel>
                     <FormControl>
-                      <Input 
-                        placeholder="Enter your email..." 
+                      <Input
+                        placeholder="Enter your email..."
                         {...field}
                         className="h-10 sm:h-11 border-slate-300 focus-visible:ring-gray-300"
                       />
@@ -228,7 +228,7 @@ export default function SignInPage() {
               {/* Register Link */}
               <p className="text-center text-xs sm:text-sm text-slate-600 pt-2">
                 Don&apos;t have an account?{" "}
-                <Link 
+                <Link
                   href="/signUpPage"
                   className="text-amber-600 hover:text-amber-700 font-semibold hover:underline"
                 >

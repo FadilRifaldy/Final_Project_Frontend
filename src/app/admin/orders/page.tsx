@@ -7,7 +7,7 @@ export default function OrdersPage() {
             <h1>Orders Page (Not implemented yet)</h1>
             {/* back to dashboard Link */}
             <div className="mt-4">
-                <Link href="/dashboard" className="text-blue-500">Back to Dashboard</Link>
+                <Link href="/admin/dashboard" className="text-blue-500">Back to Dashboard</Link>
             </div>
         </div>
     );

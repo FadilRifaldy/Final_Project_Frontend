@@ -192,7 +192,7 @@ export default function InventoryPage() {
                 title="No Store Assigned"
                 description="You haven't been assigned to any store yet. Please contact your Super Admin to assign you to a store before you can access inventory management."
                 buttonText="Go to Dashboard"
-                buttonPath="/dashboard"
+                buttonPath="/admin/dashboard"
                 variant="warning"
             />
         );
