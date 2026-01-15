@@ -6,15 +6,30 @@ import { Badge } from "@/components/ui/badge";
 
 export interface Address {
   id: string;
+  userId: string;
   label: string;
   recipientName: string;
   phone: string;
-  addressLine: string;
+  
+  // Address Details
   street: string;
-  notes?: string | null;
-  isPrimary: boolean;
+  city: string;
+  district: string;
+  province: string;
+  postalCode: string;
+  addressLine: string;
+  
+  // Coordinates
   latitude: number;
   longitude: number;
+  
+  // Additional
+  notes?: string | null;
+  isPrimary: boolean;
+  
+  // Timestamps
+  createdAt?: Date | string;
+  updatedAt?: Date | string;
 }
 
 interface Props {

@@ -8,7 +8,7 @@ import { Address } from "./address-card";
 import { searchAddress } from "@/lib/opencage/opencage";
 import dynamic from "next/dynamic";
 import { reverseGeocode } from "@/lib/opencage/reverse";
-import { MapPin, X, Loader2 } from "lucide-react";
+import { MapPin, X, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 
 interface Props {
   open: boolean;
@@ -28,6 +28,11 @@ const emptyForm: Partial<Address> = {
   recipientName: "",
   phone: "",
   addressLine: "",
+  street: "",
+  city: "",
+  district: "",
+  province: "",
+  postalCode: "",
   notes: "",
   isPrimary: false,
   latitude: undefined,
@@ -39,12 +44,15 @@ const AddressMap = dynamic(() => import("./address-map"), { ssr: false });
 export function AddressModal({ open, onClose, onSave, initialData }: Props) {
   const [suggestions, setSuggestions] = useState<AddressSuggestion[]>([]);
   const [showMap, setShowMap] = useState(false);
+  const [showDetailedFields, setShowDetailedFields] = useState(false);
   const [loading, setLoading] = useState(false);
   const debounceRef = useRef<NodeJS.Timeout | null>(null);
-  const isSelectingRef = useRef(false);
   
   const [form, setForm] = useState<Partial<Address>>(() => {
-    if (initialData) return initialData;
+    if (initialData) {
+      setShowDetailedFields(true);
+      return initialData;
+    }
 
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("user_location");
@@ -73,7 +81,12 @@ export function AddressModal({ open, onClose, onSave, initialData }: Props) {
     !!form.recipientName?.trim() &&
     !!form.phone?.trim() &&
     !!form.addressLine?.trim() &&
-    form.addressLine.trim().length >= 3;
+    form.addressLine.trim().length >= 3 &&
+    !!form.street?.trim() &&
+    !!form.city?.trim() &&
+    !!form.province?.trim() &&
+    form.latitude !== undefined &&
+    form.longitude !== undefined;
 
   const handleAddressChange = (value: string) => {
     setForm((p) => ({ ...p, addressLine: value }));
@@ -93,17 +106,27 @@ export function AddressModal({ open, onClose, onSave, initialData }: Props) {
     }, 400);
   };
 
-  const handleSelectSuggestion = (s: AddressSuggestion) => {
-    isSelectingRef.current = true;
+  const handleSelectSuggestion = async (s: AddressSuggestion) => {
+    const geo = await reverseGeocode(s.latitude, s.longitude);
+    
+    // Extract street name from addressLine (first part before comma)
+    const streetName = geo.addressLine.split(',')[0]?.trim() || s.label.split(',')[0]?.trim() || "";
     
     setForm((p) => ({
       ...p,
       addressLine: s.label,
       latitude: s.latitude,
       longitude: s.longitude,
+      street: streetName,
+      city: geo.city,
+      district: geo.district,
+      province: geo.province,
+      postalCode: geo.postalCode,
     }));
+    
     setSuggestions([]);
     setShowMap(true);
+    setShowDetailedFields(true);
   };
 
   const handleSave = async () => {
@@ -123,7 +146,7 @@ export function AddressModal({ open, onClose, onSave, initialData }: Props) {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl shadow-2xl flex flex-col max-h-[90vh]">
-        {/* Header - Fixed */}
+        {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-slate-200">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-primary/10 rounded-lg">
@@ -207,7 +230,6 @@ export function AddressModal({ open, onClose, onSave, initialData }: Props) {
                 className="border-slate-300 focus-visible:ring-primary/20"
               />
 
-              {/* Suggestions Dropdown */}
               {suggestions.length > 0 && (
                 <div className="absolute z-50 bg-white border border-slate-200 rounded-lg mt-2 w-full max-h-60 overflow-auto shadow-lg">
                   {suggestions.map((s, i) => (
@@ -230,6 +252,108 @@ export function AddressModal({ open, onClose, onSave, initialData }: Props) {
               Type at least 4 characters to see suggestions
             </p>
           </div>
+
+          {/* Toggle Detailed Fields */}
+          <button
+            type="button"
+            onClick={() => setShowDetailedFields(!showDetailedFields)}
+            className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <MapPin className="h-4 w-4 text-slate-600" />
+              <span className="text-sm font-medium text-slate-700">
+                {showDetailedFields ? "Hide" : "Show"} detailed address fields
+              </span>
+            </div>
+            {showDetailedFields ? (
+              <ChevronUp className="h-4 w-4 text-slate-600" />
+            ) : (
+              <ChevronDown className="h-4 w-4 text-slate-600" />
+            )}
+          </button>
+
+          {/* Detailed Address Fields */}
+          {showDetailedFields && (
+            <div className="space-y-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+              <p className="text-xs text-slate-600 mb-3">
+                These fields are auto-filled from address search, but you can edit them manually
+              </p>
+
+              {/* Street Name */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-slate-700">
+                  Street Name <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  placeholder="e.g. Jl. Mars Selatan"
+                  value={form.street ?? ""}
+                  onChange={(e) => setForm((p) => ({ ...p, street: e.target.value }))}
+                  className="border-slate-300 focus-visible:ring-primary/20 bg-white"
+                />
+              </div>
+
+              {/* City & District Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">
+                    City / Regency <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    placeholder="e.g. Kota Bandung"
+                    value={form.city ?? ""}
+                    onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
+                    className="border-slate-300 focus-visible:ring-primary/20 bg-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">
+                    District <span className="text-slate-400">(Optional)</span>
+                  </Label>
+                  <Input
+                    placeholder="e.g. Margahayu"
+                    value={form.district ?? ""}
+                    onChange={(e) => setForm((p) => ({ ...p, district: e.target.value }))}
+                    className="border-slate-300 focus-visible:ring-primary/20 bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Province & Postal Code Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">
+                    Province <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    placeholder="e.g. Jawa Barat"
+                    value={form.province ?? ""}
+                    onChange={(e) => setForm((p) => ({ ...p, province: e.target.value }))}
+                    className="border-slate-300 focus-visible:ring-primary/20 bg-white"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium text-slate-700">
+                    Postal Code <span className="text-slate-400">(Optional)</span>
+                  </Label>
+                  <Input
+                    placeholder="e.g. 40286"
+                    value={form.postalCode ?? ""}
+                    onChange={(e) => setForm((p) => ({ ...p, postalCode: e.target.value }))}
+                    className="border-slate-300 focus-visible:ring-primary/20 bg-white"
+                    maxLength={5}
+                  />
+                </div>
+              </div>
+
+              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <p className="text-xs text-blue-800">
+                  <span className="font-medium">💡 Tip:</span> Use address search above for automatic filling, or enter manually
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Additional Notes */}
           <div className="space-y-2">
@@ -274,21 +398,26 @@ export function AddressModal({ open, onClose, onSave, initialData }: Props) {
                   onPick={async (lat, lng) => {
                     const geo = await reverseGeocode(lat, lng);
 
+                    // Extract street name from addressLine
+                    const streetName = geo.addressLine.split(',')[0]?.trim() || "";
+
                     setForm((p) => ({
                       ...p,
                       latitude: lat,
                       longitude: lng,
                       addressLine: geo.addressLine,
+                      street: streetName,
                       city: geo.city,
                       district: geo.district,
                       province: geo.province,
                       postalCode: geo.postalCode,
                     }));
+
+                    setShowDetailedFields(true);
                   }}
                 />
               </div>
               
-              {/* Coordinate Info */}
               {form.latitude && form.longitude && (
                 <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                   <div className="flex items-start gap-2">
@@ -339,7 +468,7 @@ export function AddressModal({ open, onClose, onSave, initialData }: Props) {
           </div>
         </div>
 
-        {/* Footer - Fixed */}
+        {/* Footer */}
         <div className="flex items-center justify-end gap-3 p-6 border-t border-slate-200 bg-slate-50/50">
           <Button
             variant="outline"
