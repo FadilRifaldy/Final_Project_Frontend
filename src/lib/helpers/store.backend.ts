@@ -1,6 +1,6 @@
 import axios from "axios";
 import { ApiResponse } from "@/types/api";
-import { IStore, IStoreProduct } from "@/types/store";
+import { IStore, IStoreProduct, INearestStoreResponse } from "@/types/store";
 
 const BASE_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -151,6 +151,34 @@ export async function deleteStore(
     };
   } catch (err: unknown) {
     let message = "Gagal menghapus store";
+
+    if (axios.isAxiosError(err)) {
+      message = err.response?.data?.message || message;
+    }
+
+    return {
+      success: false,
+      message,
+    };
+  }
+}
+
+export async function getNearestStore(
+  latitude: number,
+  longitude: number
+): Promise<ApiResponse<INearestStoreResponse>> {
+  try {
+    const res = await axios.get(`${BASE_URL}/stores/nearest`, {
+      params: { latitude, longitude },
+      withCredentials: true,
+    });
+
+    return {
+      success: res.data.success,
+      data: res.data.data,
+    };
+  } catch (err: unknown) {
+    let message = "Gagal mencari toko terdekat";
 
     if (axios.isAxiosError(err)) {
       message = err.response?.data?.message || message;

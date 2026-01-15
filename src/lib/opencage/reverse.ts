@@ -25,5 +25,8 @@ export async function reverseGeocode(lat: number, lng: number) {
     district: c.suburb || c.city_district || c.county || "",
     province: c.state || "",
     postalCode: c.postcode || "",
+    // ✅ TAMBAHKAN INI untuk Address Form
+    latitude: lat,
+    longitude: lng,
   };
 }

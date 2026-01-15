@@ -36,6 +36,13 @@ export default function AddressList() {
       recipientName: data.recipientName!,
       phone: data.phone!,
       addressLine: data.addressLine!,
+      street: data.street!,
+      city: data.city!,
+      district: data.district || "",
+      province: data.province!,
+      postalCode: data.postalCode || "",
+      latitude: data.latitude!,
+      longitude: data.longitude!,
       notes: data.notes,
       isPrimary: data.isPrimary ?? false,
     };

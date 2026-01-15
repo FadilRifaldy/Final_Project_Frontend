@@ -30,3 +30,16 @@ export interface IStoreProduct {
   categoryId: string;
   sold: number;
 }
+
+export interface INearestStoreResponse {
+  nearestStore: IStore & {
+    distance: number;
+    isInRange: boolean;
+  };
+  isInServiceArea: boolean;
+  message: string;
+  allStores?: Array<IStore & {  // TAMBAH INI (optional untuk debugging)
+    distance: number;
+    isInRange: boolean;
+  }>;
+}
