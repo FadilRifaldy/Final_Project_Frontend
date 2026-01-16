@@ -116,6 +116,12 @@ export const menuItems: IMenuItems[] = [
     ],
   },
   {
+    name: "Users Management",
+    path: "/admin/users",
+    icon: Users,
+    roles: ["SUPER_ADMIN"],
+  },
+  {
     name: "Settings",
     path: "/admin/settings",
     icon: Settings,
