@@ -26,6 +26,7 @@ import {
 
 import { getMe, logoutUser } from "@/lib/helpers/auth.backend";
 import { getSearchSuggestions, SearchSuggestion } from "@/lib/helpers/search.backend";
+import { getCartCount } from "@/lib/helpers/cart.backend";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 
@@ -46,6 +47,9 @@ export default function Navbar() {
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Cart state
+  const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
     let mounted = true;
@@ -70,6 +74,46 @@ export default function Navbar() {
       mounted = false;
     };
   }, []);
+
+  // Fetch cart count when user is logged in
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      if (!user) {
+        setCartCount(0);
+        return;
+      }
+
+      const res = await getCartCount();
+      if (res.success && res.data) {
+        setCartCount(res.data.totalItems);
+      }
+    };
+
+    fetchCartCount();
+  }, [user]);
+
+  // Function to refresh cart count (can be called after adding to cart)
+  const refreshCartCount = async () => {
+    if (!user) return;
+    
+    const res = await getCartCount();
+    if (res.success && res.data) {
+      setCartCount(res.data.totalItems);
+    }
+  };
+
+  // Listen for cart update events
+  useEffect(() => {
+    const handleCartUpdate = () => {
+      refreshCartCount();
+    };
+
+    window.addEventListener('cartUpdated', handleCartUpdate);
+
+    return () => {
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
+  }, [user]);
 
   // Click outside to close suggestions
   useEffect(() => {
@@ -178,9 +222,9 @@ export default function Navbar() {
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
               <img
-                src="/klik.png"
-                className="h-10 object-contain"
-                alt="Klik Logo"
+                src="/grosirin-navbar-footer.svg"
+                className="h-[50px] w-auto object-contain"
+                alt="EasyBite Logo"
               />
             </Link>
 
@@ -298,12 +342,17 @@ export default function Navbar() {
           {/* RIGHT — CART + AUTH */}
           <div className="flex items-center gap-3">
             {/* Cart */}
-            <button className="relative p-2 rounded-lg hover:bg-amber-50 transition">
+            <Link 
+              href="/cart"
+              className="relative p-2 rounded-lg hover:bg-amber-50 transition"
+            >
               <ShoppingCart size={22} />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center">
-                3
-              </span>
-            </button>
+              {cartCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
+            </Link>
 
             {!user && (
               <>

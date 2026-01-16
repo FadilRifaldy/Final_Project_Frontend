@@ -36,12 +36,11 @@ const Footer = () => {
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <a href="#" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                <span className="text-primary-foreground font-bold text-xl">F</span>
-              </div>
-              <span className="text-xl font-bold">
-                Fresh<span className="text-primary">Mart</span>
-              </span>
+              <img
+                src="/grosirin-navbar-footer.svg"
+                className="h-20 w-auto object-contain bg-white rounded-lg p-2"
+                alt="EasyBite Logo"
+              />
             </a>
             <p className="text-primary-foreground/70 mb-6 text-sm leading-relaxed">
               Belanja kebutuhan sehari-hari lebih mudah dan cepat. Produk segar berkualitas langsung dari petani lokal.
@@ -129,7 +128,7 @@ const Footer = () => {
         <div className="container mx-auto py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-primary-foreground/60">
-              © 2024 FreshMart. All rights reserved.
+              © 2024 EasyBite. All rights reserved.
             </p>
             <div className="flex items-center gap-4">
               <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6 opacity-60" />

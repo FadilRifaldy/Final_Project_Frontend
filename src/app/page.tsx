@@ -11,7 +11,7 @@ export default function Home() {
     <div className="min-h-screen">
       <main>
         <Navbar />
-        <StoreInfoBar storeName="FreshMart East" />
+        <StoreInfoBar />
         <HeroCarousel />
         <CategorySection />
         <ProductList />

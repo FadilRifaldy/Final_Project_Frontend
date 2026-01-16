@@ -1,6 +1,9 @@
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import getProducts, { getProductById, getVariantsByProductId } from "@/lib/helpers/product.backend";
 import { getInventoryByVariant } from "@/lib/helpers/inventory.backend";
+import { addToCart } from "@/lib/helpers/cart.backend";
 import { IProduct, IProductVariant } from "@/types/product";
 import { IStoreInventory } from "@/types/inventory";
 
@@ -18,10 +21,13 @@ export function useProductDetail(slug: string) {
     const [quantity, setQuantity] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [addingToCart, setAddingToCart] = useState(false);
 
     // Multi-store inventory states
     const [storeInventories, setStoreInventories] = useState<IStoreInventory[]>([]);
     const [selectedStoreId, setSelectedStoreId] = useState<string>("");
+
+    const router = useRouter();
 
     // ==================== HELPER FUNCTIONS ====================
     /**
@@ -143,9 +149,56 @@ export function useProductDetail(slug: string) {
         }
     };
 
-    const handleAddToCart = () => {
-        // TODO: Implement add to cart functionality
-        alert("Feature to be added");
+    const handleAddToCart = async () => {
+        if (!selectedVariantId || !selectedStoreId) {
+            toast.error("Silakan pilih varian dan toko terlebih dahulu");
+            return;
+        }
+
+        // Validate stock
+        const selectedInventory = storeInventories.find(
+            (inv) => inv.storeId === selectedStoreId
+        );
+
+        if (!selectedInventory) {
+            toast.error("Toko tidak ditemukan");
+            return;
+        }
+
+        const availableStock = selectedInventory.quantity - selectedInventory.reserved;
+        
+        if (availableStock < quantity) {
+            toast.error(`Stok tidak mencukupi. Tersedia: ${availableStock}`);
+            return;
+        }
+
+        try {
+            setAddingToCart(true);
+            
+            const response = await addToCart(selectedVariantId, selectedStoreId, quantity);
+
+            if (response.success) {
+                toast.success("Produk berhasil ditambahkan ke keranjang!", {
+                    action: {
+                        label: "Lihat Keranjang",
+                        onClick: () => router.push("/cart"),
+                    },
+                });
+                
+                // Dispatch event to update cart count in navbar
+                window.dispatchEvent(new Event('cartUpdated'));
+                
+                // Reset quantity after successful add
+                setQuantity(1);
+            } else {
+                toast.error(response.message || "Gagal menambahkan ke keranjang");
+            }
+        } catch (err: any) {
+            console.error("Error adding to cart:", err);
+            toast.error("Terjadi kesalahan saat menambahkan ke keranjang");
+        } finally {
+            setAddingToCart(false);
+        }
     };
 
     const handleVariantChange = (variantId: string) => {
@@ -175,6 +228,7 @@ export function useProductDetail(slug: string) {
         // Loading & Error States
         loading,
         error,
+        addingToCart,
 
         // Handlers
         handleQuantityChange,

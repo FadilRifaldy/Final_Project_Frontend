@@ -27,6 +27,7 @@ export default function ProductDetailPage() {
         quantity,
         loading,
         error,
+        addingToCart,
         handleQuantityChange,
         handleAddToCart,
         handleVariantChange,
@@ -184,9 +185,10 @@ export default function ProductDetailPage() {
                                     className="w-full"
                                     size="lg"
                                     onClick={handleAddToCart}
+                                    disabled={addingToCart || !selectedStoreId || !selectedVariantId}
                                 >
                                     <ShoppingCart className="h-5 w-5 mr-2" />
-                                    Tambah ke Keranjang
+                                    {addingToCart ? "Menambahkan..." : "Tambah ke Keranjang"}
                                 </Button>
                             </div>
                         )}
