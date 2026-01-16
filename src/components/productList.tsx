@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { ProductCard } from "./productCard";
 import { IProduct } from "@/types/product";
 import getProducts from "@/lib/helpers/product.backend";
+import { getProductVariant } from "@/lib/helpers/productVariant.backend";
 import { Skeleton } from "./ui/skeleton";
 
 interface ProductListProps {
@@ -39,7 +40,27 @@ export function ProductList({
           );
         }
 
-        setProducts(filteredProducts);
+        // Fetch variants for each product
+        const productsWithVariants = await Promise.all(
+          filteredProducts.map(async (product) => {
+            try {
+              const variants = await getProductVariant(product.id);
+              return {
+                ...product,
+                variants: variants || [],
+              };
+            } catch (err) {
+              console.error(`Error fetching variants for product ${product.id}:`, err);
+              // Return product without variants if fetch fails
+              return {
+                ...product,
+                variants: [],
+              };
+            }
+          })
+        );
+
+        setProducts(productsWithVariants);
       } catch (err: any) {
         console.error("Error fetching products:", err);
         setError(err.message || "Gagal memuat produk");

@@ -8,7 +8,7 @@ import { ProductImageGallery } from "@/components/products/ProductImageGallery";
 import { VariantSelector } from "@/components/products/VariantSelector";
 import { ProductBreadcrumb } from "@/components/products/ProductBreadcrumb";
 import { ProductDetailSkeleton } from "@/components/products/ProductDetailSkeleton";
-import { StoreAvailabilityCard } from "@/components/products/StoreAvailabilityCard";
+import { StoreCombobox } from "@/components/products/StoreCombobox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -130,17 +130,13 @@ export default function ProductDetailPage() {
                                     </CardContent>
                                 </Card>
                             ) : (
-                                <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-                                    {storeInventories.map((inventory) => (
-                                        <StoreAvailabilityCard
-                                            key={inventory.id}
-                                            inventory={inventory}
-                                            variant={selectedVariant!}
-                                            isSelected={selectedStoreId === inventory.storeId}
-                                            onSelect={() => setSelectedStoreId(inventory.storeId)}
-                                        />
-                                    ))}
-                                </div>
+                                <StoreCombobox
+                                    stores={storeInventories}
+                                    variant={selectedVariant!}
+                                    selectedStoreId={selectedStoreId}
+                                    onStoreSelect={setSelectedStoreId}
+                                    isLoading={loading}
+                                />
                             )}
                         </div>
 
@@ -165,7 +161,7 @@ export default function ProductDetailPage() {
                                                 value={quantity}
                                                 onChange={(e) => {
                                                     const val = parseInt(e.target.value) || 1;
-                                                    if (val >= 1 && val <= 99) setQuantity(val);
+                                                    if (val >= 1 && val <= 999) setQuantity(val);
                                                 }}
                                                 className="w-full text-center border rounded px-2 py-1"
                                                 min="1"
@@ -176,7 +172,7 @@ export default function ProductDetailPage() {
                                             variant="outline"
                                             size="icon"
                                             onClick={() => handleQuantityChange(1)}
-                                            disabled={quantity >= 99}
+                                            disabled={quantity >= 999}
                                         >
                                             <Plus className="h-4 w-4" />
                                         </Button>

@@ -14,16 +14,10 @@ export function ProductCard({ product }: ProductCardProps) {
   // Get first image or use placeholder
   const primaryImage = product.images?.[0]?.imageUrl || "/placeholder-product.jpg";
 
-  // Get cheapest price from variants
-  const getLowestPrice = () => {
-    if (!product.variants || product.variants.length === 0) {
-      return 0;
-    }
-    const prices = product.variants.map((v: IProductVariant) => Number(v.price));
-    return Math.min(...prices);
-  };
-
-  const lowestPrice = getLowestPrice();
+  // Get price from first variant
+  const displayPrice = product.variants?.[0]?.price
+    ? Number(product.variants[0].price)
+    : 0;
 
   // Generate product detail URL using product name as slug
   // Example: "iPhone 17 Pro" -> "iphone-17-pro"
@@ -49,37 +43,32 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Content */}
-        <div className="p-4 space-y-3">
+        <div className="p-3 space-y-2">
           {/* Category Badge */}
           {product.category && (
-            <Badge variant="secondary" className="text-[10px]">
+            <Badge variant="secondary" className="text-[10px] px-2 py-0.5">
               {product.category.name}
             </Badge>
           )}
 
           {/* Product Name */}
-          <h3 className="font-display font-semibold text-foreground line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-10">
             {product.name}
           </h3>
 
-          {/* Price */}
-          <div>
-            <span className="font-bold text-lg text-primary">
-              {product.variants && product.variants.length > 1 && (
-                <span className="text-xs font-normal text-muted-foreground mr-1">
-                  Mulai dari
-                </span>
-              )}
-              Rp {lowestPrice.toLocaleString("id-ID")}
+          {/* Price & Variant Info */}
+          <div className="flex items-baseline justify-between gap-2">
+            <span className="font-bold text-base text-primary">
+              Rp {displayPrice.toLocaleString("id-ID")}
             </span>
             {product.variants && product.variants.length > 1 && (
-              <div className="text-xs text-muted-foreground">
+              <span className="text-[10px] text-muted-foreground">
                 {product.variants.length} varian
-              </div>
+              </span>
             )}
           </div>
 
-          {/* Add to Cart Button */}
+          {/* button add to category */}
           <Button
             className="w-full"
             onClick={(e) => {
@@ -88,9 +77,10 @@ export function ProductCard({ product }: ProductCardProps) {
               alert("Feature to be added");
             }}
           >
-            Lihat Detail
+            Add to cart
           </Button>
         </div>
+
       </div>
     </Link>
   );
