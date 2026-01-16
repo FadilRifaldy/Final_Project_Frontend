@@ -72,13 +72,13 @@ export default function SignInPage() {
         <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-7">
           {/* Logo & Title */}
           <div className="flex flex-col items-center mb-5">
-            <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
+            <div className="w-auto h-24 flex items-center justify-center mb-4">
               <Image
-                src="/logo.png"
-                alt="Logo"
-                width={56}
-                height={56}
-                className="w-full h-full object-cover"
+                src="/grosirin-auth-amber.svg"
+                alt="EasyBite Logo"
+                width={96}
+                height={96}
+                className="w-auto h-full object-contain rounded-2xl shadow-sm"
               />
             </div>
             <h1 className="text-xl sm:text-2xl font-bold mt-3 text-slate-900">

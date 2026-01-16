@@ -45,13 +45,13 @@ export function SignUpFormContent({
     <div className="flex flex-col h-full max-h-[calc(100vh-12rem)] md:max-h-[730px]">
       {/* Logo & Title - Fixed at top */}
       <div className="flex flex-col items-center mb-6 flex-shrink-0">
-        <div className="w-16 h-16 bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl flex items-center justify-center overflow-hidden shadow-lg">
+        <div className="w-auto h-20 flex items-center justify-center mb-4">
           <Image
-            src="/logo.png"
-            alt="Logo"
-            width={64}
-            height={64}
-            className="w-full h-full object-cover"
+            src="/grosirin-auth-amber.svg"
+            alt="EasyBite Logo"
+            width={80}
+            height={80}
+            className="w-auto h-full object-contain rounded-2xl shadow-sm"
           />
         </div>
         <h1 className="text-xl sm:text-2xl font-bold mt-2 text-slate-900 text-center">
