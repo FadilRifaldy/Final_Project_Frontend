@@ -3,22 +3,10 @@ import api from "../api/axios";
 import { ApiResponse } from "@/types/api";
 import { ICategory } from "@/types/category";
 
-/**
- * ============================================================================
- * CATEGORY API SERVICE
- * Consolidated service untuk semua operasi category (Public & Admin)
- * ============================================================================
- */
-
 // ============================================================================
 // PUBLIC FUNCTIONS - Untuk Landing Page & User-facing features
 // ============================================================================
 
-/**
- * Get all categories (Public)
- * Digunakan untuk landing page, category browsing, dll
- * @returns Promise dengan array of categories
- */
 export const getAllCategories = async (): Promise<ICategory[]> => {
   try {
     const response = await api.get<ApiResponse<ICategory[]>>("/api/categories");
@@ -34,12 +22,6 @@ export const getAllCategories = async (): Promise<ICategory[]> => {
   }
 };
 
-/**
- * Get single category by ID (Public)
- * Digunakan untuk category detail page
- * @param id - Category ID
- * @returns Promise dengan single category
- */
 export const getCategoryById = async (id: string): Promise<ICategory> => {
   try {
     const response = await api.get<ApiResponse<ICategory>>(`/api/categories/${id}`);
@@ -59,12 +41,6 @@ export const getCategoryById = async (id: string): Promise<ICategory> => {
 // ADMIN FUNCTIONS - Untuk Admin Panel (Requires Authentication)
 // ============================================================================
 
-/**
- * Create new category (Admin Only)
- * @param name - Category name
- * @param description - Category description (optional)
- * @returns Promise dengan created category
- */
 export const createCategory = async (
   name: string,
   description?: string
@@ -91,13 +67,6 @@ export const createCategory = async (
   }
 };
 
-/**
- * Update existing category (Admin Only)
- * @param id - Category ID
- * @param name - New category name
- * @param description - New category description (optional)
- * @returns Promise dengan updated category
- */
 export const updateCategory = async (
   id: string,
   name: string,
@@ -125,12 +94,6 @@ export const updateCategory = async (
   }
 };
 
-/**
- * Delete category (Admin Only)
- * Soft delete - sets deletedAt timestamp
- * @param id - Category ID
- * @returns Promise dengan deleted category
- */
 export const deleteCategory = async (id: string): Promise<ICategory> => {
   try {
     const response = await api.delete<ApiResponse<ICategory>>(`/api/categories/${id}`);
@@ -153,12 +116,6 @@ export const deleteCategory = async (id: string): Promise<ICategory> => {
 // HELPER FUNCTIONS
 // ============================================================================
 
-/**
- * Generate URL-friendly slug from category name
- * @param name - Category name
- * @returns Slugified string
- * @example slugify("Dairy & Eggs") => "dairy-eggs"
- */
 export function slugify(name: string): string {
   return name
     .toLowerCase()           // Convert to lowercase
@@ -171,7 +128,4 @@ export function slugify(name: string): string {
 // LEGACY EXPORTS - For backward compatibility
 // ============================================================================
 
-/**
- * @deprecated Use getAllCategories() instead
- */
-export default getAllCategories;
+export default getAllCategories();
