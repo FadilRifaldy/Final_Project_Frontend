@@ -134,7 +134,11 @@ export default function Navbar() {
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
     if (suggestion.type === "product") {
-      router.push(`/browse?q=${encodeURIComponent(suggestion.name)}`);
+      let url = `/browse?q=${encodeURIComponent(suggestion.name)}`;
+      if (suggestion.city) {
+        url += `&city=${encodeURIComponent(suggestion.city)}`;
+      }
+      router.push(url);
     } else {
       const storeSlug = suggestion.name
         .toLowerCase()
