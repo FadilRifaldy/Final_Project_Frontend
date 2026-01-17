@@ -31,14 +31,14 @@ const Footer = () => {
   return (
     <footer id="footer" className="bg-amber-600 text-primary-foreground">
       {/* Main Footer */}
-      <div className="container mx-auto py-12 md:py-16">
+      <div className="container mx-auto py-12 md:py-16 px-6 md:px-12 lg:px-20">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
             <a href="#" className="flex items-center gap-2 mb-6">
               <img
                 src="/grosirin-navbar-footer.svg"
-                className="h-20 w-auto object-contain bg-white rounded-lg p-2"
+                className="h-20 w-auto object-contain rounded-lg"
                 alt="EasyBite Logo"
               />
             </a>
@@ -126,16 +126,10 @@ const Footer = () => {
       {/* Bottom Bar */}
       <div className="border-t border-primary-foreground/10">
         <div className="container mx-auto py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-primary-foreground/60">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <p className="text-sm text-primary-foreground/60 text-center">
               © 2024 EasyBite. All rights reserved.
             </p>
-            <div className="flex items-center gap-4">
-              <img src="https://upload.wikimedia.org/wikipedia/commons/5/5e/Visa_Inc._logo.svg" alt="Visa" className="h-6 opacity-60" />
-              <img src="https://upload.wikimedia.org/wikipedia/commons/2/2a/Mastercard-logo.svg" alt="Mastercard" className="h-6 opacity-60" />
-              <span className="text-sm text-primary-foreground/60 font-medium">GoPay</span>
-              <span className="text-sm text-primary-foreground/60 font-medium">OVO</span>
-            </div>
           </div>
         </div>
       </div>

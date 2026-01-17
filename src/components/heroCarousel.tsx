@@ -19,8 +19,8 @@ const slides = [
 
 export default function HeroCarousel() {
   return (
-    <section className="py-6">
-      <div className="container mx-auto px-4">
+    <section className="py-10 md:py-12">
+      <div className="container mx-auto px-6 md:px-12 lg:px-20">
 
         {/* Carousel */}
         <Carousel

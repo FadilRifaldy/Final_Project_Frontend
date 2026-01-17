@@ -30,7 +30,8 @@ export interface ShippingOption {
   courier: string;
   service: string;
   description: string;
-  estimate: string;
+  estimate?: string; // Legacy field (optional)
+  etd: string; // Estimated time of delivery
   cost: number;
 }
 
@@ -45,21 +46,6 @@ export interface ShippingCostData {
   };
   weight: number;
   options: ShippingOption[];
-}
-
-export interface CreateOrderData {
-  addressId: string;
-  shippingCourier: string;
-  shippingService: string;
-  shippingDescription: string;
-  shippingEstimate: string;
-  shippingFee: number;
-  paymentMethod: 'MANUAL_TRANSFER' | 'PAYMENT_GATEWAY';
-}
-
-export interface OrderCreated {
-  orderId: string;
-  orderNumber: string;
 }
 
 /**
@@ -114,40 +100,6 @@ export async function calculateShipping(
     };
   } catch (err: unknown) {
     let message = 'Gagal menghitung ongkos kirim';
-
-    if (axios.isAxiosError(err)) {
-      message = err.response?.data?.message || message;
-    }
-
-    return {
-      success: false,
-      message,
-    };
-  }
-}
-
-/**
- * Create order
- */
-export async function createOrder(
-  data: CreateOrderData
-): Promise<ApiResponse<OrderCreated>> {
-  try {
-    const res = await axios.post(
-      `${BASE_URL}/checkout/create-order`,
-      data,
-      {
-        withCredentials: true,
-      }
-    );
-
-    return {
-      success: res.data.success,
-      data: res.data.data,
-      message: res.data.message,
-    };
-  } catch (err: unknown) {
-    let message = 'Gagal membuat order';
 
     if (axios.isAxiosError(err)) {
       message = err.response?.data?.message || message;

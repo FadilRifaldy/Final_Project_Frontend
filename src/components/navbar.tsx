@@ -188,7 +188,7 @@ export default function Navbar() {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
-      router.push(`/store/${storeSlug}`);
+      router.push(`/browse/store/${storeSlug}`);
     }
     setShowSuggestions(false);
     setSearchQuery("");
