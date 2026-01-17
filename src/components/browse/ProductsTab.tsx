@@ -97,8 +97,8 @@ export default function ProductsTab({
                                     console.log('Product:', product.name, 'Stock:', product.availableStock);
 
                                     return (
-                                        <Card className="group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 h-full border-0 shadow-lg overflow-hidden bg-white">
-                                            <Link key={product.id} href={`/browse/${slug}`} className={product.availableStock === 0 ? "pointer-events-none" : ""}>
+                                        <Card key={product.id} className="group hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 h-full border-0 shadow-lg overflow-hidden bg-white">
+                                            <Link href={`/browse/${slug}`} className={product.availableStock === 0 ? "pointer-events-none" : ""}>
                                                 <CardContent className="p-0">
                                                     {/* Image Container dengan aspect ratio tetap */}
                                                     <div className="relative aspect-square bg-gradient-to-br from-gray-100 to-gray-50 overflow-hidden">

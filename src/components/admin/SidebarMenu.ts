@@ -67,6 +67,12 @@ export const menuItems: IMenuItems[] = [
     ],
   },
   {
+    name: "Users Management",
+    path: "/admin/users",
+    icon: Users,
+    roles: ["SUPER_ADMIN"],
+  },
+  {
     name: "Order Management",
     path: "/admin/orders",
     icon: ShoppingCart,
@@ -114,12 +120,6 @@ export const menuItems: IMenuItems[] = [
         icon: ChartArea,
       },
     ],
-  },
-  {
-    name: "Users Management",
-    path: "/admin/users",
-    icon: Users,
-    roles: ["SUPER_ADMIN"],
   },
   {
     name: "Settings",
