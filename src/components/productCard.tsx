@@ -5,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import Link from "next/link";
 import { IProduct, IProductVariant } from "@/types/product";
+import { ArrowRight } from "lucide-react";
 
 interface ProductCardProps {
   product: IProduct;
@@ -14,19 +15,22 @@ export function ProductCard({ product }: ProductCardProps) {
   // Get first image or use placeholder
   const primaryImage = product.images?.[0]?.imageUrl || "/placeholder-product.jpg";
 
+  // Get the specific variant displayed (filtered by store from parent)
+  const displayedVariant = product.variants?.[0];
+
   // Get price from first variant
-  const displayPrice = product.variants?.[0]?.price
-    ? Number(product.variants[0].price)
+  const displayPrice = displayedVariant?.price
+    ? Number(displayedVariant.price)
     : 0;
 
   // Generate product detail URL using product name as slug
-  // Example: "iPhone 17 Pro" -> "iphone-17-pro"
   const productSlug = product.name
     .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-") // Replace non-alphanumeric with dash
-    .replace(/^-+|-+$/g, ""); // Remove leading/trailing dashes
+    .replace(/[^a-z0-9]+/g, "-") 
+    .replace(/^-+|-+$/g, ""); 
 
-  const detailUrl = `/browse/${productSlug}`;
+  // Add variant slug to URL if available
+  const detailUrl = `/browse/${productSlug}${displayedVariant?.slug ? `?variant=${displayedVariant.slug}` : ""}`;
 
   return (
     <Link href={detailUrl}>
@@ -51,9 +55,9 @@ export function ProductCard({ product }: ProductCardProps) {
             </Badge>
           )}
 
-          {/* Product Name */}
+          {/* Product Name - Show Variant Name if available (filtered), otherwise Product Name */}
           <h3 className="font-semibold text-sm leading-tight line-clamp-2 min-h-10">
-            {product.name}
+            {displayedVariant ? displayedVariant.name : product.name}
           </h3>
 
           {/* Price & Variant Info */}
@@ -68,9 +72,12 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* View Detail Button */}
-          <Button className="w-full" asChild>
-            <span>Lihat Detail</span>
+          {/* button Lihat Detail */}
+          <Button
+            className="cursor-pointer w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition shadow-sm"
+          >
+            <ArrowRight className="h-4 w-4 mr-2" />
+            Lihat Detail
           </Button>
         </div>
 

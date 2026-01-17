@@ -22,7 +22,7 @@ export function CategorySection() {
   }, [categories, showAll]);
 
   return (
-    <section className="py-10 md:py-14">
+    <section className="py-6 md:py-8">
       <div className="max-w-7xl mx-auto px-4">
 
         {/* Title */}
@@ -88,8 +88,8 @@ export function CategorySection() {
                     href="#products"
                     className={cn(
                       "shrink-0 px-6 py-3 h-12 flex items-center justify-center",
-                      "rounded-xl bg-amber-500 shadow-sm",
-                      "hover:shadow-md hover:bg-amber-600 hover:-translate-y-1 transition-all",
+                      "rounded-xl bg-gradient-to-br from-amber-500 to-orange-500 shadow-sm",
+                      "hover:shadow-md hover:from-amber-600 hover:to-orange-600 hover:-translate-y-1 transition-all",
                       "animate-fade-in whitespace-nowrap"
                     )}
                     style={{ animationDelay: `${index * 40}ms` }}

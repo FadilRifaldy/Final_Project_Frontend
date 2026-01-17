@@ -1,11 +1,13 @@
 'use client';
 
+import { useRouter } from 'next/navigation';
 import {
   MapPin,
   Search,
   Loader2,
   Package,
   Store as StoreIcon,
+  ArrowLeft,
 } from 'lucide-react';
 import ProductsTab from '@/components/browse/ProductsTab';
 import StoresTab from '@/components/browse/StoresTab';
@@ -60,6 +62,7 @@ interface Store {
 }
 
 export default function BrowsePage() {
+  const router = useRouter();
   const {
     // Data
     products,
@@ -113,11 +116,30 @@ export default function BrowsePage() {
       <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 shadow-lg">
         <div className="container mx-auto px-4 py-8">
 
-          {/* Title */}
-          <div className="text-center mb-6">
-            <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-              Jelajahi Produk & Toko
-            </h1>
+          {/* Header Row: Back + Logo + Title */}
+          <div className="relative flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+            <div className="flex items-center gap-4 self-start md:self-auto z-10">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="text-white hover:bg-white/20 hover:text-white rounded-full"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </Button>
+              <img
+                src="/grosirin-navbar-footer.svg"
+                className="h-14 w-auto object-contain bg-white rounded-xl p-2 shadow-md"
+                alt="Logo"
+              />
+            </div>
+
+            <div className="text-center md:absolute md:left-1/2 md:-translate-x-1/2 w-full md:w-auto">
+              <h1 className="text-3xl md:text-4xl font-bold text-white mb-1">
+                Jelajahi Produk & Toko
+              </h1>
+              <p className="text-amber-50">Temukan penawaran terbaik di sekitar Anda</p>
+            </div>
           </div>
 
           {/* Integrated Compact Search Bar */}

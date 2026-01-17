@@ -29,18 +29,20 @@ const Footer = () => {
   ];
 
   return (
-    <footer id="footer" className="bg-amber-600 text-primary-foreground">
+    <footer id="footer" className="bg-gradient-to-br from-amber-500 via-orange-500 to-amber-600 text-primary-foreground">
       {/* Main Footer */}
       <div className="container mx-auto py-12 md:py-16 px-6 md:px-12 lg:px-20">
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <a href="#" className="inline-block mb-6">
-              <img
-                src="/grosirin-navbar-footer.svg"
-                className="h-12 w-auto object-contain"
-                alt="Grosirin Logo"
-              />
+            <a href="#" className="inline-block mb-8">
+              <div className="bg-white p-4 rounded-3xl shadow-md inline-flex items-center justify-center">
+                <img
+                  src="/grosirin-navbar-footer.svg"
+                  className="h-12 w-auto object-contain"
+                  alt="Grosirin Logo"
+                />
+              </div>
             </a>
             <p className="text-primary-foreground/70 mb-6 text-sm leading-relaxed">
               Belanja kebutuhan sehari-hari lebih mudah dan cepat. Produk segar berkualitas langsung dari petani lokal.

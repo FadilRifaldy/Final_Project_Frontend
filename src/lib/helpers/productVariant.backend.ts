@@ -2,9 +2,11 @@ import axios from "axios";
 import api from "../api/axios";
 import { IProductVariant, ICreateProductVariant, IUpdateProductVariant } from "@/types/product";
 
-export async function getProductVariant(productId: string): Promise<IProductVariant[]> {
+export async function getProductVariant(productId: string, storeId?: string): Promise<IProductVariant[]> {
     try {
-        const response = await api.get(`/api/products/var/all/${productId}`)
+        const params: any = {}
+        if (storeId) params.storeId = storeId
+        const response = await api.get(`/api/products/var/all/${productId}`, { params })
         return response.data.data
     } catch (error) {
         if (axios.isAxiosError(error)) {

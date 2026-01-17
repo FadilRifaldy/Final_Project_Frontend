@@ -163,7 +163,30 @@ export default function Navbar() {
 
   const handleSearch = () => {
     if (searchQuery.trim()) {
-      router.push(`/browse?q=${encodeURIComponent(searchQuery.trim())}`);
+      let url = `/browse?q=${encodeURIComponent(searchQuery.trim())}`;
+      
+      // Try to get city from localStorage to filter results by user's location
+      try {
+        const cachedStore = localStorage.getItem("nearest_store");
+        if (cachedStore) {
+          const store = JSON.parse(cachedStore);
+          if (store.city) {
+            url += `&city=${encodeURIComponent(store.city)}`;
+          }
+        } else {
+          const cachedLocation = localStorage.getItem("user_location");
+          if (cachedLocation) {
+            const loc = JSON.parse(cachedLocation);
+            if (loc.city) {
+              url += `&city=${encodeURIComponent(loc.city)}`;
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Error reading location for search:", err);
+      }
+
+      router.push(url);
       setShowSuggestions(false);
       setSearchQuery("");
     }
@@ -178,10 +201,20 @@ export default function Navbar() {
 
   const handleSuggestionClick = (suggestion: SearchSuggestion) => {
     if (suggestion.type === "product") {
+      // Go to browse page with the product name as search term.
+      // Don't include suggestion.city here, let the browse page handle 
+      // the nearest store matching to avoid forcing a specific (possibly wrong) city.
       let url = `/browse?q=${encodeURIComponent(suggestion.name)}`;
-      if (suggestion.city) {
-        url += `&city=${encodeURIComponent(suggestion.city)}`;
-      }
+      
+      // Still try to add city from localStorage if available for consistency
+      try {
+        const cachedStore = localStorage.getItem("nearest_store");
+        if (cachedStore) {
+          const store = JSON.parse(cachedStore);
+          if (store.city) url += `&city=${encodeURIComponent(store.city)}`;
+        }
+      } catch (err) {}
+
       router.push(url);
     } else {
       const storeSlug = suggestion.name
@@ -263,7 +296,7 @@ export default function Navbar() {
                 />
                 <Button
                   onClick={handleSearch}
-                  className="rounded-none rounded-r-xl px-4 bg-amber-500 hover:bg-amber-600"
+                  className="rounded-none rounded-r-xl px-4 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 border-0"
                 >
                   <Search size={18} />
                 </Button>
@@ -345,7 +378,7 @@ export default function Navbar() {
             >
               <ShoppingCart size={22} />
               {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-amber-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-4 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
                   {cartCount > 99 ? '99+' : cartCount}
                 </span>
               )}
@@ -355,14 +388,14 @@ export default function Navbar() {
               <>
                 <Link
                   href="/signInPage"
-                  className="hidden md:flex border border-amber-500 text-amber-500 px-4 py-2 rounded-xl hover:bg-amber-50 transition"
+                  className="hidden md:flex border border-amber-600 text-amber-600 px-4 py-2 rounded-xl hover:bg-amber-50 transition"
                 >
                   Sign In
                 </Link>
 
                 <Link
                   href="/signUpPage"
-                  className="hidden md:flex bg-amber-500 text-white px-4 py-2 rounded-xl hover:bg-amber-600 transition"
+                  className="hidden md:flex bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-2 rounded-xl hover:from-amber-600 hover:to-orange-600 transition shadow-sm"
                 >
                   Sign Up
                 </Link>

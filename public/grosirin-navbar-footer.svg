@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg width="480" height="120" viewBox="0 0 480 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="340" height="120" viewBox="0 0 340 120" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <style>
       @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@600&amp;display=swap');
     </style>
     <linearGradient id="amberGrad" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#FBBF24"/>
-      <stop offset="100%" stop-color="#F59E0B"/>
+      <stop offset="0%" stop-color="#F59E0B"/>
+      <stop offset="100%" stop-color="#F97316"/>
     </linearGradient>
     <linearGradient id="greenGrad" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#22C55E"/>
@@ -23,6 +23,6 @@
 
   <!-- Text -->
   <text x="120" y="78" font-size="52" font-family="'Fredoka', cursive" font-weight="600" letter-spacing="1">
-    <tspan fill="#F59E0B">Grosi</tspan><tspan fill="#166534">rin</tspan>
+    <tspan fill="url(#amberGrad)">Grosi</tspan><tspan fill="#166534">rin</tspan>
   </text>
 </svg>
