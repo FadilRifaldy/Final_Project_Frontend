@@ -3,13 +3,13 @@ import { Truck, Timer, ShieldCheck } from "lucide-react";
 const features = [
   {
     icon: <Truck className="w-6 h-6 text-primary" />,
-    text: "Gratis Ongkir",
+    text: "Ongkir Fleksibel",
     subtext: "Min. belanja Rp100rb",
   },
   {
     icon: <Timer className="w-6 h-6 text-primary" />,
-    text: "Pengiriman Cepat",
-    subtext: "Dalam 2 jam",
+    text: "Pengiriman Tentative",
+    subtext: "Dalam 24 jam",
   },
   {
     icon: <ShieldCheck className="w-6 h-6 text-primary" />,

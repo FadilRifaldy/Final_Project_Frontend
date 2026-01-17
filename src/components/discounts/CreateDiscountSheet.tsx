@@ -117,27 +117,29 @@ export function CreateDiscountSheet({
                         productVariantIds={formState.productVariantIds}
                         setProductVariantIds={setters.setProductVariantIds}
                     />
+
+                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex justify-end gap-2">
+                        <Button
+                            variant="outline"
+                            onClick={() => onOpenChange(false)}
+                            disabled={isSubmitting}
+                        >
+                            Cancel
+                        </Button>
+                        <Button onClick={handleSubmit} disabled={isSubmitting}>
+                            {isSubmitting ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create Discount"
+                            )}
+                        </Button>
+                    </div>
                 </div>
 
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex justify-end gap-2">
-                    <Button
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                        disabled={isSubmitting}
-                    >
-                        Cancel
-                    </Button>
-                    <Button onClick={handleSubmit} disabled={isSubmitting}>
-                        {isSubmitting ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Creating...
-                            </>
-                        ) : (
-                            "Create Discount"
-                        )}
-                    </Button>
-                </div>
+
             </SheetContent>
         </Sheet>
     );

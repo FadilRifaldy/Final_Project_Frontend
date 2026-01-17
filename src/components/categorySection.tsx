@@ -28,10 +28,10 @@ export function CategorySection() {
         {/* Title */}
         <div className="text-center mb-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
-            Shop by Category
+            Browse by vast Categories
           </h2>
           <p className="text-muted-foreground mt-2">
-            Browse through our wide selection of fresh groceries
+            cari kategori pilihanmu
           </p>
         </div>
 

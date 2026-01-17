@@ -95,7 +95,7 @@ export default function Navbar() {
   // Function to refresh cart count (can be called after adding to cart)
   const refreshCartCount = async () => {
     if (!user) return;
-    
+
     const res = await getCartCount();
     if (res.success && res.data) {
       setCartCount(res.data.totalItems);
@@ -218,7 +218,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur border-b">
       <div className="container mx-auto px-4 md:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20 gap-4">
-          {/* LEFT — LOGO + CATEGORY */}
+          {/* LEFT — LOGO */}
           <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2">
               <img
@@ -229,9 +229,6 @@ export default function Navbar() {
             </Link>
 
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 text-[16px] text-gray-700 hover:text-black">
-                Category <ChevronDown size={18} />
-              </DropdownMenuTrigger>
 
               <DropdownMenuContent>
                 <DropdownMenuItem onClick={() => router.push('/browse')}>
@@ -264,7 +261,7 @@ export default function Navbar() {
                     if (suggestions.length > 0) setShowSuggestions(true);
                   }}
                 />
-                <Button 
+                <Button
                   onClick={handleSearch}
                   className="rounded-none rounded-r-xl px-4 bg-amber-500 hover:bg-amber-600"
                 >
@@ -293,8 +290,8 @@ export default function Navbar() {
                           <>
                             <div className="w-10 h-10 bg-gray-100 rounded flex items-center justify-center flex-shrink-0">
                               {suggestion.image ? (
-                                <img 
-                                  src={suggestion.image} 
+                                <img
+                                  src={suggestion.image}
                                   alt={suggestion.name}
                                   className="w-full h-full object-cover rounded"
                                 />
@@ -342,7 +339,7 @@ export default function Navbar() {
           {/* RIGHT — CART + AUTH */}
           <div className="flex items-center gap-3">
             {/* Cart */}
-            <Link 
+            <Link
               href="/cart"
               className="relative p-2 rounded-lg hover:bg-amber-50 transition"
             >

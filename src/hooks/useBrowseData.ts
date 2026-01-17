@@ -26,6 +26,7 @@ interface BrowseProduct {
     }>;
     storeName?: string;
     storeCity?: string;
+    storeId?: string;
     availableStock?: number;
     lowestPrice?: number;
 }
