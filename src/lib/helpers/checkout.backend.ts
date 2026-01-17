@@ -55,6 +55,11 @@ export interface CreateOrderData {
   shippingEstimate: string;
   shippingFee: number;
   paymentMethod: 'MANUAL_TRANSFER' | 'PAYMENT_GATEWAY';
+  appliedDiscounts?: Array<{
+    discountId: string;
+    discountAmount: number;
+  }>;
+  totalDiscount?: number;
 }
 
 export interface OrderCreated {
