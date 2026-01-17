@@ -75,7 +75,7 @@ export function ProductList({
   if (error) {
     return (
       <section className="py-12 md:py-16">
-        <div className="max-w-7xl mx-auto px-4">
+        <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
           <div className="text-center p-8 bg-destructive/10 rounded-lg">
             <p className="text-destructive font-medium">{error}</p>
           </div>

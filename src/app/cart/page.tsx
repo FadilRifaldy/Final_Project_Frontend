@@ -35,6 +35,7 @@ export default function CartPage() {
   const router = useRouter();
   const [cart, setCart] = useState<Cart | null>(null);
   const [loading, setLoading] = useState(true);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -116,7 +117,7 @@ export default function CartPage() {
       return;
     }
 
-    setLoading(true);
+    setCheckoutLoading(true);
 
     const response = await validateCartHelper();
 
@@ -124,9 +125,11 @@ export default function CartPage() {
       router.push('/checkout');
     } else {
       toast.error(response.message || 'Gagal memvalidasi keranjang');
+      setCheckoutLoading(false);
     }
-
-    setLoading(false);
+    
+    // Don't set loading false if redirect is successful
+    // The page will unmount anyway
   };
 
   if (loading) {
@@ -424,9 +427,9 @@ export default function CartPage() {
                   <Button
                     onClick={handleCheckout}
                     className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg h-14 text-lg"
-                    disabled={loading}
+                    disabled={checkoutLoading}
                   >
-                    {loading ? (
+                    {checkoutLoading ? (
                       <>
                         <Loader2 className="h-5 w-5 animate-spin mr-2" />
                         Memproses...

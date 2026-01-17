@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
@@ -20,7 +20,6 @@ import { getCart, formatPrice, formatWeight, type Cart } from '@/lib/helpers/car
 import {
   getAddresses,
   calculateShipping,
-  createOrder,
   type Address,
   type ShippingOption,
   formatPrice as formatCheckoutPrice,
@@ -54,9 +53,10 @@ export default function CheckoutPage() {
   const [selectedShipping, setSelectedShipping] = useState<ShippingOption | null>(null);
   const [loadingShipping, setLoadingShipping] = useState(false);
 
-  // Payment state
+  // Payment state (Dummy/Simulation)
   const [paymentMethod, setPaymentMethod] = useState<'MANUAL_TRANSFER' | 'PAYMENT_GATEWAY'>('MANUAL_TRANSFER');
 
+  // Order state (Simulation only)
   // Discount state
   const [activeDiscounts, setActiveDiscounts] = useState<any[]>([]);
   const [appliedDiscounts, setAppliedDiscounts] = useState<any[]>([]);
@@ -67,6 +67,10 @@ export default function CheckoutPage() {
   // Order state
   const [creatingOrder, setCreatingOrder] = useState(false);
 
+  // Track if initial shipping fetch has been done
+  const initialShippingFetched = useRef(false);
+  const previousAddressRef = useRef<string>('');
+
   useEffect(() => {
     fetchCart();
     fetchAddresses();
@@ -74,11 +78,21 @@ export default function CheckoutPage() {
   }, []);
 
   useEffect(() => {
+    // Fetch shipping when:
+    // 1. Both cart and address are available
+    // 2. Address has changed (or first time)
     if (selectedAddress && cart) {
-      fetchShipping();
+      const addressChanged = previousAddressRef.current !== selectedAddress;
+      
+      if (!initialShippingFetched.current || addressChanged) {
+        fetchShipping();
+        initialShippingFetched.current = true;
+        previousAddressRef.current = selectedAddress;
+      }
+      
       setIsChangingAddress(false);
     }
-  }, [selectedAddress]);
+  }, [selectedAddress, cart]);
 
   // Calculate discounts when cart or active discounts change
   useEffect(() => {
@@ -93,8 +107,11 @@ export default function CheckoutPage() {
     if (response.success && response.data) {
       setCart(response.data);
     } else {
+      // Only redirect if we're sure cart is empty (not just loading)
+      setLoadingCart(false);
       toast.error('Keranjang kosong');
       router.push('/cart');
+      return;
     }
 
     setLoadingCart(false);
@@ -105,15 +122,16 @@ export default function CheckoutPage() {
 
     if (response.success && response.data) {
       setAddresses(response.data);
-
-      if (!selectedAddress) {
-        const primary = response.data.find((addr) => addr.isPrimary);
-        if (primary) {
-          setSelectedAddress(primary.id);
-        } else if (response.data.length > 0) {
-          setSelectedAddress(response.data[0].id);
-        }
-      }
+      
+      // Removed auto-selection logic to prevent auto-triggering RajaOngkir API
+      // if (!selectedAddress) {
+      //   const primary = response.data.find((addr) => addr.isPrimary);
+      //   if (primary) {
+      //     setSelectedAddress(primary.id);
+      //   } else if (response.data.length > 0) {
+      //     setSelectedAddress(response.data[0].id);
+      //   }
+      // }
     }
 
     setLoadingAddresses(false);
@@ -277,17 +295,7 @@ export default function CheckoutPage() {
     setLoadingShipping(false);
   };
 
-  const handleToggleDiscount = (discountId: string, enabled: boolean) => {
-    const newEnabled = new Set(enabledDiscounts);
-    if (enabled) {
-      newEnabled.add(discountId);
-    } else {
-      newEnabled.delete(discountId);
-    }
-    setEnabledDiscounts(newEnabled);
-  };
-
-  const handleCreateOrder = async () => {
+  const handleContinue = async () => {
     if (!selectedAddress) {
       toast.error('Pilih alamat pengiriman');
       return;
@@ -299,34 +307,25 @@ export default function CheckoutPage() {
     }
 
     setCreatingOrder(true);
-
-    const response = await createOrder({
-      addressId: selectedAddress,
-      shippingCourier: selectedShipping.courier,
-      shippingService: selectedShipping.service,
-      shippingDescription: selectedShipping.description,
-      shippingEstimate: selectedShipping.estimate,
-      shippingFee: selectedShipping.cost,
-      paymentMethod,
-      appliedDiscounts: appliedDiscounts
-        .filter(d => enabledDiscounts.has(d.id)) // Only send enabled discounts
-        .map(d => ({
-          discountId: d.id,
-          discountAmount: d.appliedAmount,
-        })),
-      totalDiscount: appliedDiscounts
-        .filter(d => enabledDiscounts.has(d.id))
-        .reduce((sum, d) => sum + d.appliedAmount, 0),
-    });
-
-    if (response.success && response.data) {
-      toast.success('Order berhasil dibuat!');
-      router.push(`/order/${response.data.orderId}`);
-    } else {
-      toast.error(response.message || 'Gagal membuat order');
-    }
-
+    
+    // Simulate processing
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    
+    toast.success('Checkout berhasil!');
+    
+    
     setCreatingOrder(false);
+    router.push('/cart');
+  };
+  
+  const handleToggleDiscount = (discountId: string, enabled: boolean) => {
+    const newEnabled = new Set(enabledDiscounts);
+    if (enabled) {
+      newEnabled.add(discountId);
+    } else {
+      newEnabled.delete(discountId);
+    }
+    setEnabledDiscounts(newEnabled);
   };
 
   const getTotal = () => {
@@ -433,19 +432,51 @@ export default function CheckoutPage() {
                     <p className="text-gray-600">Tidak ada opsi pengiriman tersedia</p>
                   </div>
                 ) : (
-                  <ShippingMethodCard
-                    options={shippingOptions}
-                    selectedService={selectedShipping?.service || ''}
-                    onSelect={(service) => {
-                      const option = shippingOptions.find((opt) => opt.service === service);
+                  <RadioGroup
+                    value={selectedShipping ? `${selectedShipping.courier}-${selectedShipping.service}` : ''}
+                    onValueChange={(value) => {
+                      const option = shippingOptions.find((opt) => `${opt.courier}-${opt.service}` === value);
                       setSelectedShipping(option || null);
                     }}
-                  />
+                  >
+                    <div className="space-y-3">
+                      {shippingOptions.map((option) => (
+                        <label
+                          key={`${option.courier}-${option.service}`}
+                          htmlFor={`${option.courier}-${option.service}`}
+                          className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${
+                            selectedShipping && `${selectedShipping.courier}-${selectedShipping.service}` === `${option.courier}-${option.service}`
+                              ? 'border-amber-500 bg-amber-50'
+                              : 'border-gray-200 hover:border-amber-300'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 flex-1">
+                            <RadioGroupItem value={`${option.courier}-${option.service}`} id={`${option.courier}-${option.service}`} />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-bold text-gray-800">{option.courier}</span>
+                                <span className="text-sm text-gray-600">• {option.service}</span>
+                              </div>
+                              <p className="text-sm text-gray-600">{option.description}</p>
+                              <p className="text-xs text-gray-500 mt-1">
+                                Estimasi: {option.etd || option.estimate || '-'}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right ml-4">
+                            <p className="font-bold text-amber-600 whitespace-nowrap">
+                              {formatCheckoutPrice(option.cost)}
+                            </p>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </RadioGroup>
                 )}
               </CardContent>
             </Card>
 
-            {/* Payment Method */}
+            {/* Payment Method (Dummy / Simulation) */}
             <Card className="shadow-lg border-0 overflow-hidden py-0 gap-0">
               <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b py-4">
                 <CardTitle className="flex items-center gap-2 text-gray-800">
@@ -482,9 +513,9 @@ export default function CheckoutPage() {
                     total={getTotal()}
                   />
 
-                  {/* Checkout Button */}
+                  {/* Checkout Button (Simulation) */}
                   <Button
-                    onClick={handleCreateOrder}
+                    onClick={handleContinue}
                     disabled={!selectedAddress || !selectedShipping || creatingOrder}
                     className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg h-14 text-lg"
                   >
@@ -496,7 +527,7 @@ export default function CheckoutPage() {
                     ) : (
                       <>
                         <Check className="h-5 w-5 mr-2" />
-                        Buat Pesanan
+                        Checkout
                         <ChevronRight className="h-5 w-5 ml-2" />
                       </>
                     )}
