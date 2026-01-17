@@ -4,24 +4,16 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  MapPin,
   Truck,
   CreditCard,
   Loader2,
   ChevronRight,
   Package,
-  AlertCircle,
   Check,
-  Building2,
-  Plus,
-  Pencil,
-  User,
-  Phone,
+  AlertCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { getCart, formatPrice, formatWeight, type Cart } from '@/lib/helpers/cart.backend';
@@ -33,13 +25,18 @@ import {
   type ShippingOption,
   formatPrice as formatCheckoutPrice,
 } from '@/lib/helpers/checkout.backend';
+import { getActiveDiscounts } from '@/lib/helpers/discounts.backend';
 
 import { createAddress, setPrimaryAddress } from '@/lib/helpers/address.backend';
 import { AddressModal } from '@/components/address/address-modal';
+import { AddressSelectionCard } from '@/components/checkout/AddressSelectionCard';
+import { OrderSummary } from '@/components/checkout/OrderSummary';
+import { ShippingMethodCard } from '@/components/checkout/ShippingMethodCard';
+import { PaymentMethodCard } from '@/components/checkout/PaymentMethodCard';
 
 export default function CheckoutPage() {
   const router = useRouter();
-  
+
   // Cart state
   const [cart, setCart] = useState<Cart | null>(null);
   const [loadingCart, setLoadingCart] = useState(true);
@@ -60,12 +57,20 @@ export default function CheckoutPage() {
   // Payment state
   const [paymentMethod, setPaymentMethod] = useState<'MANUAL_TRANSFER' | 'PAYMENT_GATEWAY'>('MANUAL_TRANSFER');
 
+  // Discount state
+  const [activeDiscounts, setActiveDiscounts] = useState<any[]>([]);
+  const [appliedDiscounts, setAppliedDiscounts] = useState<any[]>([]);
+  const [enabledDiscounts, setEnabledDiscounts] = useState<Set<string>>(new Set()); // Track which discounts are enabled
+  const [totalDiscount, setTotalDiscount] = useState(0);
+  const [loadingDiscounts, setLoadingDiscounts] = useState(true);
+
   // Order state
   const [creatingOrder, setCreatingOrder] = useState(false);
 
   useEffect(() => {
     fetchCart();
     fetchAddresses();
+    fetchDiscounts();
   }, []);
 
   useEffect(() => {
@@ -74,6 +79,13 @@ export default function CheckoutPage() {
       setIsChangingAddress(false);
     }
   }, [selectedAddress]);
+
+  // Calculate discounts when cart or active discounts change
+  useEffect(() => {
+    if (cart && activeDiscounts.length > 0) {
+      calculateDiscounts();
+    }
+  }, [cart, activeDiscounts]);
 
   const fetchCart = async () => {
     const response = await getCart();
@@ -93,7 +105,7 @@ export default function CheckoutPage() {
 
     if (response.success && response.data) {
       setAddresses(response.data);
-      
+
       if (!selectedAddress) {
         const primary = response.data.find((addr) => addr.isPrimary);
         if (primary) {
@@ -105,6 +117,118 @@ export default function CheckoutPage() {
     }
 
     setLoadingAddresses(false);
+  };
+
+  const fetchDiscounts = async () => {
+    try {
+      const discounts = await getActiveDiscounts();
+      setActiveDiscounts(discounts);
+    } catch (error) {
+      console.error('Failed to fetch discounts:', error);
+    } finally {
+      setLoadingDiscounts(false);
+    }
+  };
+
+  const calculateDiscounts = () => {
+    if (!cart) return;
+
+    let totalDiscountAmount = 0;
+    const applied: any[] = [];
+
+    // 1. Check PRODUCT discounts
+    cart.items.forEach((item) => {
+      const productDiscount = activeDiscounts.find((d) =>
+        d.type === 'PRODUCT' &&
+        d.productDiscounts?.some((pd: any) => pd.productVariantId === item.variant.id)
+      );
+
+      if (productDiscount) {
+        let itemDiscount = 0;
+        if (productDiscount.discountValueType === 'PERCENTAGE') {
+          itemDiscount = (Number(item.variant.price) * item.quantity * Number(productDiscount.discountValue)) / 100;
+        } else {
+          itemDiscount = Number(productDiscount.discountValue) * item.quantity;
+        }
+
+        // Apply max discount if exists
+        if (productDiscount.maxDiscount && itemDiscount > Number(productDiscount.maxDiscount)) {
+          itemDiscount = Number(productDiscount.maxDiscount);
+        }
+
+        totalDiscountAmount += itemDiscount;
+
+        if (!applied.find(a => a.id === productDiscount.id)) {
+          applied.push({
+            ...productDiscount,
+            appliedAmount: itemDiscount,
+          });
+        } else {
+          const existing = applied.find(a => a.id === productDiscount.id);
+          if (existing) existing.appliedAmount += itemDiscount;
+        }
+      }
+    });
+
+    // 2. Check CART discount (min purchase)
+    const cartDiscount = activeDiscounts.find((d) =>
+      d.type === 'CART' &&
+      cart.summary.subtotal >= Number(d.minPurchase || 0)
+    );
+
+    if (cartDiscount) {
+      let cartDiscountAmount = 0;
+      if (cartDiscount.discountValueType === 'PERCENTAGE') {
+        cartDiscountAmount = (cart.summary.subtotal * Number(cartDiscount.discountValue)) / 100;
+      } else {
+        cartDiscountAmount = Number(cartDiscount.discountValue);
+      }
+
+      // Apply max discount if exists
+      if (cartDiscount.maxDiscount && cartDiscountAmount > Number(cartDiscount.maxDiscount)) {
+        cartDiscountAmount = Number(cartDiscount.maxDiscount);
+      }
+
+      totalDiscountAmount += cartDiscountAmount;
+      applied.push({
+        ...cartDiscount,
+        appliedAmount: cartDiscountAmount,
+      });
+    }
+
+    // 3. Check BOGO discount
+    cart.items.forEach((item) => {
+      const bogoDiscount = activeDiscounts.find((d) =>
+        d.type === 'BUY_ONE_GET_ONE' &&
+        d.productDiscounts?.some((pd: any) => pd.productVariantId === item.variant.id)
+      );
+
+      if (bogoDiscount && bogoDiscount.buyQuantity && bogoDiscount.getQuantity) {
+        const totalQuantity = item.quantity;
+        const freeItems = Math.floor(totalQuantity / (bogoDiscount.buyQuantity + bogoDiscount.getQuantity)) * bogoDiscount.getQuantity;
+        const bogoDiscountAmount = freeItems * Number(item.variant.price);
+
+        totalDiscountAmount += bogoDiscountAmount;
+
+        if (!applied.find(a => a.id === bogoDiscount.id)) {
+          applied.push({
+            ...bogoDiscount,
+            appliedAmount: bogoDiscountAmount,
+          });
+        } else {
+          const existing = applied.find(a => a.id === bogoDiscount.id);
+          if (existing) existing.appliedAmount += bogoDiscountAmount;
+        }
+      }
+    });
+
+    setTotalDiscount(totalDiscountAmount);
+    setAppliedDiscounts(applied);
+
+    // Auto-enable all discounts by default
+    if (applied.length > 0 && enabledDiscounts.size === 0) {
+      setEnabledDiscounts(new Set(applied.map(d => d.id)));
+    }
   };
 
   const handleSaveAddress = async (data: Partial<Address>) => {
@@ -119,7 +243,7 @@ export default function CheckoutPage() {
 
   const handleAddressSelection = async (value: string) => {
     setSelectedAddress(value);
-    
+
     // Auto set as primary when selected as per user request
     const res = await setPrimaryAddress(value);
     if (res.success) {
@@ -142,7 +266,7 @@ export default function CheckoutPage() {
 
     if (response.success && response.data) {
       setShippingOptions(response.data.options);
-      
+
       if (response.data.options.length > 0) {
         setSelectedShipping(response.data.options[0]);
       }
@@ -151,6 +275,16 @@ export default function CheckoutPage() {
     }
 
     setLoadingShipping(false);
+  };
+
+  const handleToggleDiscount = (discountId: string, enabled: boolean) => {
+    const newEnabled = new Set(enabledDiscounts);
+    if (enabled) {
+      newEnabled.add(discountId);
+    } else {
+      newEnabled.delete(discountId);
+    }
+    setEnabledDiscounts(newEnabled);
   };
 
   const handleCreateOrder = async () => {
@@ -174,6 +308,15 @@ export default function CheckoutPage() {
       shippingEstimate: selectedShipping.estimate,
       shippingFee: selectedShipping.cost,
       paymentMethod,
+      appliedDiscounts: appliedDiscounts
+        .filter(d => enabledDiscounts.has(d.id)) // Only send enabled discounts
+        .map(d => ({
+          discountId: d.id,
+          discountAmount: d.appliedAmount,
+        })),
+      totalDiscount: appliedDiscounts
+        .filter(d => enabledDiscounts.has(d.id))
+        .reduce((sum, d) => sum + d.appliedAmount, 0),
     });
 
     if (response.success && response.data) {
@@ -188,7 +331,28 @@ export default function CheckoutPage() {
 
   const getTotal = () => {
     if (!cart || !selectedShipping) return 0;
-    return cart.summary.subtotal + selectedShipping.cost;
+
+    const subtotal = Number(cart.summary?.subtotal) || 0;
+
+    // Only count enabled discounts
+    const enabledDiscountAmount = appliedDiscounts
+      .filter(d => enabledDiscounts.has(d.id))
+      .reduce((sum, d) => sum + d.appliedAmount, 0);
+
+    const shipping = Number(selectedShipping.cost) || 0;
+
+    const total = subtotal - enabledDiscountAmount + shipping;
+
+    // Debug logging
+    console.log('🧮 Checkout Total Calculation:', {
+      subtotal,
+      enabledDiscountAmount,
+      shipping,
+      total,
+      enabledDiscounts: Array.from(enabledDiscounts),
+    });
+
+    return total;
   };
 
   const selectedAddressData = addresses.find((addr) => addr.id === selectedAddress);
@@ -224,188 +388,21 @@ export default function CheckoutPage() {
 
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+
             {/* Address Selection */}
-            <Card className="shadow-lg border-0 overflow-hidden py-0 gap-0">
-              <CardHeader className="bg-gradient-to-r from-amber-50 to-orange-50 border-b py-4 flex flex-row items-center justify-between">
-                <div className="flex items-center justify-between w-full">
-                  <CardTitle className="flex items-center gap-2 text-gray-800">
-                    <MapPin className="h-5 w-5 text-amber-600" />
-                    Alamat Pengiriman
-                  </CardTitle>
-                  {selectedAddressData && !isChangingAddress && (
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => setIsChangingAddress(true)}
-                      className="text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                    >
-                      <Pencil className="w-4 h-4 mr-2" />
-                      Ganti
-                    </Button>
-                  )}
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                {loadingAddresses ? (
-                  <div className="flex items-center justify-center py-8">
-                    <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
-                  </div>
-                ) : addresses.length === 0 ? (
-                  <div className="text-center py-8">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <AlertCircle className="h-8 w-8 text-gray-400" />
-                    </div>
-                    <p className="text-gray-600 mb-4">Belum ada alamat tersimpan</p>
-                    <Button 
-                      onClick={() => setShowAddressModal(true)} 
-                      className="bg-gradient-to-r from-amber-500 to-orange-500"
-                    >
-                      <Plus className="w-4 h-4 mr-2" />
-                      Tambah Alamat
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    {!isChangingAddress && selectedAddressData ? (
-                      // Selected Address - Compact View
-                      <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-5 border-2 border-amber-200">
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center flex-shrink-0 shadow-sm">
-                            <MapPin className="h-6 w-6 text-amber-600" />
-                          </div>
-                          
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-3">
-                              <h3 className="font-bold text-lg text-gray-900">
-                                {selectedAddressData.label}
-                              </h3>
-                              {selectedAddressData.isPrimary && (
-                                <Badge className="bg-amber-500 text-xs">Utama</Badge>
-                              )}
-                            </div>
-                            
-                            <div className="space-y-2">
-                              <div className="flex items-center gap-2 text-sm">
-                                <User className="h-4 w-4 text-gray-500" />
-                                <span className="font-medium text-gray-800">
-                                  {selectedAddressData.recipientName}
-                                </span>
-                              </div>
-                              
-                              <div className="flex items-center gap-2 text-sm">
-                                <Phone className="h-4 w-4 text-gray-500" />
-                                <span className="text-gray-700">
-                                  {selectedAddressData.phone}
-                                </span>
-                              </div>
-                              
-                              <div className="flex items-start gap-2 text-sm">
-                                <MapPin className="h-4 w-4 text-gray-500 mt-0.5 flex-shrink-0" />
-                                <div className="text-gray-700">
-                                  <p className="line-clamp-2 font-medium">{selectedAddressData.street || selectedAddressData.addressLine}</p>
-                                  <p className="text-gray-600 mt-0.5">
-                                    {[
-                                      selectedAddressData.district, 
-                                      selectedAddressData.city, 
-                                      selectedAddressData.province
-                                    ].filter(Boolean).join(', ')} {selectedAddressData.postalCode}
-                                  </p>
-                                </div>
-                              </div>
-                              
-                              {selectedAddressData.notes && (
-                                <div className="mt-3 pt-3 border-t border-amber-200">
-                                  <p className="text-xs text-gray-600 italic">
-                                    Catatan: {selectedAddressData.notes}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ) : (
-                      // Address Selection List
-                      <div className="space-y-4">
-                        <div className="flex justify-between items-center mb-4">
-                          <p className="text-sm text-gray-600">Pilih alamat pengiriman:</p>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => setShowAddressModal(true)}
-                            className="border-dashed border-amber-300 text-amber-700 hover:bg-amber-50"
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Tambah
-                          </Button>
-                        </div>
-                        
-                        <RadioGroup value={selectedAddress} onValueChange={handleAddressSelection}>
-                          <div className="space-y-3 max-h-[360px] overflow-y-auto pr-2">
-                            {addresses.map((address) => (
-                              <label
-                                key={address.id}
-                                htmlFor={address.id}
-                                className={`flex items-start gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                                  selectedAddress === address.id
-                                    ? 'border-amber-500 bg-amber-50'
-                                    : 'border-gray-200 hover:border-amber-300'
-                                }`}
-                              >
-                                <RadioGroupItem 
-                                  value={address.id} 
-                                  id={address.id} 
-                                  className="mt-1"
-                                />
-                                <div className="flex-1 min-w-0">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="font-semibold text-gray-800">
-                                      {address.label}
-                                    </span>
-                                    {address.isPrimary && (
-                                      <Badge className="bg-amber-500 text-xs shadow-sm">Utama</Badge>
-                                    )}
-                                  </div>
-                                  
-                                  <p className="text-sm font-medium text-gray-800 mb-1">
-                                    {address.recipientName} • {address.phone}
-                                  </p>
-                                  
-                                  <p className="text-sm text-gray-600 line-clamp-1">
-                                    {address.street || address.addressLine}
-                                  </p>
-                                  
-                                  <p className="text-sm text-gray-600">
-                                    {[
-                                      address.district, 
-                                      address.city, 
-                                      address.province
-                                    ].filter(Boolean).join(', ')} {address.postalCode}
-                                  </p>
-                                </div>
-                              </label>
-                            ))}
-                          </div>
-                        </RadioGroup>
-                        
-                        {selectedAddress && (
-                          <div className="pt-2 flex justify-end">
-                            <Button 
-                              onClick={() => setIsChangingAddress(false)}
-                              className="bg-amber-600 hover:bg-amber-700"
-                            >
-                              Gunakan Alamat Ini
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <AddressSelectionCard
+              addresses={addresses}
+              selectedAddress={selectedAddress}
+              isChangingAddress={isChangingAddress}
+              loadingAddresses={loadingAddresses}
+              onSelectAddress={handleAddressSelection}
+              onChangeAddress={() => setIsChangingAddress(true)}
+              onConfirmAddress={() => setIsChangingAddress(false)}
+              onAddAddress={() => setShowAddressModal(true)}
+            />
 
             {/* Shipping Method */}
             <Card className="shadow-lg border-0 overflow-hidden py-0 gap-0">
@@ -436,46 +433,14 @@ export default function CheckoutPage() {
                     <p className="text-gray-600">Tidak ada opsi pengiriman tersedia</p>
                   </div>
                 ) : (
-                  <RadioGroup
-                    value={selectedShipping?.service || ''}
-                    onValueChange={(value) => {
-                      const option = shippingOptions.find((opt) => opt.service === value);
+                  <ShippingMethodCard
+                    options={shippingOptions}
+                    selectedService={selectedShipping?.service || ''}
+                    onSelect={(service) => {
+                      const option = shippingOptions.find((opt) => opt.service === service);
                       setSelectedShipping(option || null);
                     }}
-                  >
-                    <div className="space-y-3">
-                      {shippingOptions.map((option) => (
-                        <label
-                          key={`${option.courier}-${option.service}`}
-                          htmlFor={option.service}
-                          className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                            selectedShipping?.service === option.service
-                              ? 'border-amber-500 bg-amber-50'
-                              : 'border-gray-200 hover:border-amber-300'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3 flex-1">
-                            <RadioGroupItem value={option.service} id={option.service} />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-1">
-                                <span className="font-bold text-gray-800">{option.courier}</span>
-                                <span className="text-sm text-gray-600">• {option.service}</span>
-                              </div>
-                              <p className="text-sm text-gray-600">{option.description}</p>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Estimasi: {option.estimate}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="text-right ml-4">
-                            <p className="font-bold text-amber-600 whitespace-nowrap">
-                              {formatCheckoutPrice(option.cost)}
-                            </p>
-                          </div>
-                        </label>
-                      ))}
-                    </div>
-                  </RadioGroup>
+                  />
                 )}
               </CardContent>
             </Card>
@@ -489,58 +454,10 @@ export default function CheckoutPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6">
-                <RadioGroup value={paymentMethod} onValueChange={(value: any) => setPaymentMethod(value)}>
-                  <div className="space-y-3">
-                    {/* Manual Transfer */}
-                    <label
-                      htmlFor="manual"
-                      className={`flex items-center gap-3 p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                        paymentMethod === 'MANUAL_TRANSFER'
-                          ? 'border-amber-500 bg-amber-50'
-                          : 'border-gray-200 hover:border-amber-300'
-                      }`}
-                    >
-                      <RadioGroupItem value="MANUAL_TRANSFER" id="manual" />
-                      <div className="flex items-start gap-3 flex-1">
-                        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm">
-                          <Building2 className="h-5 w-5 text-amber-600" />
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-semibold text-gray-800 mb-1">
-                            Transfer Bank Manual
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            Bayar melalui transfer bank dan upload bukti pembayaran
-                          </p>
-                        </div>
-                      </div>
-                    </label>
-
-                    {/* Payment Gateway - Disabled */}
-                    <div className="relative">
-                      <label
-                        htmlFor="gateway"
-                        className="flex items-center gap-3 p-4 rounded-xl border-2 border-gray-200 opacity-60 cursor-not-allowed"
-                      >
-                        <RadioGroupItem value="PAYMENT_GATEWAY" id="gateway" disabled />
-                        <div className="flex items-start gap-3 flex-1">
-                          <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center flex-shrink-0">
-                            <CreditCard className="h-5 w-5 text-gray-400" />
-                          </div>
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <p className="font-semibold text-gray-700">Payment Gateway</p>
-                              <Badge variant="outline" className="text-xs">Segera Hadir</Badge>
-                            </div>
-                            <p className="text-sm text-gray-500">
-                              Kartu kredit, e-wallet, dan metode lainnya
-                            </p>
-                          </div>
-                        </div>
-                      </label>
-                    </div>
-                  </div>
-                </RadioGroup>
+                <PaymentMethodCard
+                  selectedMethod={paymentMethod}
+                  onSelect={setPaymentMethod}
+                />
               </CardContent>
             </Card>
           </div>
@@ -556,60 +473,14 @@ export default function CheckoutPage() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-6">
-                  {/* Items */}
-                  <div className="space-y-3 mb-6 max-h-60 overflow-y-auto">
-                    {cart.items.map((item) => (
-                      <div key={item.id} className="flex gap-3">
-                        <div className="w-16 h-16 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                          {item.variant.primaryImage ? (
-                            <img
-                              src={item.variant.primaryImage}
-                              alt={item.variant.name}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <Package className="h-6 w-6 text-gray-300" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-800 line-clamp-2 mb-1">
-                            {item.variant.name}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {item.quantity} x {formatPrice(item.variant.price)}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Summary */}
-                  <div className="space-y-3 mb-6 pt-6 border-t">
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Subtotal ({cart.summary.totalQuantity} item)</span>
-                      <span className="font-semibold">{formatPrice(cart.summary.subtotal)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Berat Total</span>
-                      <span className="font-semibold">{formatWeight(cart.summary.estimatedWeight)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <span>Ongkos Kirim</span>
-                      <span className="font-semibold">
-                        {selectedShipping ? formatCheckoutPrice(selectedShipping.cost) : '-'}
-                      </span>
-                    </div>
-                    <div className="border-t pt-3 mt-3">
-                      <div className="flex justify-between items-center">
-                        <span className="text-base font-bold text-gray-800">Total Pembayaran</span>
-                        <span className="text-2xl font-bold text-amber-600">
-                          {formatCheckoutPrice(getTotal())}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+                  <OrderSummary
+                    cart={cart}
+                    selectedShipping={selectedShipping}
+                    appliedDiscounts={appliedDiscounts}
+                    enabledDiscounts={enabledDiscounts}
+                    onToggleDiscount={handleToggleDiscount}
+                    total={getTotal()}
+                  />
 
                   {/* Checkout Button */}
                   <Button
@@ -640,9 +511,10 @@ export default function CheckoutPage() {
               </Card>
             </div>
           </div>
+
         </div>
       </div>
-      
+
       <AddressModal
         open={showAddressModal}
         onClose={() => setShowAddressModal(false)}
