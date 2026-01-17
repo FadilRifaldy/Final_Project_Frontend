@@ -116,7 +116,7 @@ export function StoreCombobox({
 
                                 return (
                                     <CommandItem
-                                        key={inventory.id}
+                                        key={`${inventory.id}-${inventory.storeId}`}
                                         value={`${inventory.store.name} ${inventory.store.city} ${inventory.store.province}`}
                                         onSelect={() => {
                                             if (!isOutOfStock) {

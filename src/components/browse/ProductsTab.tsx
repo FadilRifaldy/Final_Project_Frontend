@@ -179,16 +179,8 @@ export default function ProductsTab({
                                                             product.availableStock === 0 && "bg-gray-100 text-gray-400 hover:bg-gray-100 cursor-not-allowed opacity-70"
                                                         )}
                                                     >
-                                                        {/* <button onClick alert feature to be added */}
-                                                        <button onClick={(e) => {
-                                                            e.preventDefault();
-                                                            alert('Feature to be added');
-                                                        }}>
-                                                            <span className='flex items-center gap-2'>
-                                                                <ShoppingCart className="h-4 w-4 mr-2" />
-                                                                {product.availableStock === 0 ? 'Stok Habis' : 'Add to cart'}
-                                                            </span>
-                                                        </button>
+                                                        <ShoppingCart className="h-4 w-4 mr-2" />
+                                                        {product.availableStock === 0 ? 'Stok Habis' : 'Lihat Detail'}
                                                     </div>
                                                 </CardFooter>
                                             </Link>

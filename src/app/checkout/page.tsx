@@ -32,6 +32,8 @@ import { AddressSelectionCard } from '@/components/checkout/AddressSelectionCard
 import { OrderSummary } from '@/components/checkout/OrderSummary';
 import { ShippingMethodCard } from '@/components/checkout/ShippingMethodCard';
 import { PaymentMethodCard } from '@/components/checkout/PaymentMethodCard';
+import { RadioGroup } from '@/components/ui/radio-group';
+import { RadioGroupItem } from '@/components/ui/radio-group';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -83,13 +85,13 @@ export default function CheckoutPage() {
     // 2. Address has changed (or first time)
     if (selectedAddress && cart) {
       const addressChanged = previousAddressRef.current !== selectedAddress;
-      
+
       if (!initialShippingFetched.current || addressChanged) {
         fetchShipping();
         initialShippingFetched.current = true;
         previousAddressRef.current = selectedAddress;
       }
-      
+
       setIsChangingAddress(false);
     }
   }, [selectedAddress, cart]);
@@ -122,7 +124,7 @@ export default function CheckoutPage() {
 
     if (response.success && response.data) {
       setAddresses(response.data);
-      
+
       // Removed auto-selection logic to prevent auto-triggering RajaOngkir API
       // if (!selectedAddress) {
       //   const primary = response.data.find((addr) => addr.isPrimary);
@@ -307,17 +309,17 @@ export default function CheckoutPage() {
     }
 
     setCreatingOrder(true);
-    
+
     // Simulate processing
     await new Promise(resolve => setTimeout(resolve, 1500));
-    
+
     toast.success('Checkout berhasil!');
-    
-    
+
+
     setCreatingOrder(false);
     router.push('/cart');
   };
-  
+
   const handleToggleDiscount = (discountId: string, enabled: boolean) => {
     const newEnabled = new Set(enabledDiscounts);
     if (enabled) {
@@ -444,11 +446,10 @@ export default function CheckoutPage() {
                         <label
                           key={`${option.courier}-${option.service}`}
                           htmlFor={`${option.courier}-${option.service}`}
-                          className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${
-                            selectedShipping && `${selectedShipping.courier}-${selectedShipping.service}` === `${option.courier}-${option.service}`
+                          className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all cursor-pointer ${selectedShipping && `${selectedShipping.courier}-${selectedShipping.service}` === `${option.courier}-${option.service}`
                               ? 'border-amber-500 bg-amber-50'
                               : 'border-gray-200 hover:border-amber-300'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-center gap-3 flex-1">
                             <RadioGroupItem value={`${option.courier}-${option.service}`} id={`${option.courier}-${option.service}`} />

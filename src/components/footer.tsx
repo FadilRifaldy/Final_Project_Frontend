@@ -22,10 +22,10 @@ const Footer = () => {
   };
 
   const storeInfo = [
-    { icon: MapPin, text: "Jl. Sudirman No. 123, Jakarta Selatan" },
+    { icon: MapPin, text: "Jl. Asia Afrika No.133-137 lt.9, Kota Bandung, Jawa Barat" },
     { icon: Phone, text: "+62 21 1234 5678" },
-    { icon: Mail, text: "hello@freshmart.id" },
-    { icon: Clock, text: "Setiap hari 07:00 - 22:00" },
+    { icon: Mail, text: "hello@grosirin.id" },
+    { icon: Clock, text: "Setiap hari 24 Jam" },
   ];
 
   return (
@@ -35,11 +35,11 @@ const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-8">
           {/* Brand */}
           <div className="col-span-2 md:col-span-4 lg:col-span-1">
-            <a href="#" className="flex items-center gap-2 mb-6">
+            <a href="#" className="inline-block mb-6">
               <img
                 src="/grosirin-navbar-footer.svg"
-                className="h-20 w-auto object-contain rounded-lg"
-                alt="EasyBite Logo"
+                className="h-12 w-auto object-contain"
+                alt="Grosirin Logo"
               />
             </a>
             <p className="text-primary-foreground/70 mb-6 text-sm leading-relaxed">
@@ -128,7 +128,7 @@ const Footer = () => {
         <div className="container mx-auto py-6">
           <div className="flex flex-col md:flex-row items-center justify-center gap-4">
             <p className="text-sm text-primary-foreground/60 text-center">
-              © 2024 EasyBite. All rights reserved.
+              © 2026 Grosirin. All rights reserved.
             </p>
           </div>
         </div>
