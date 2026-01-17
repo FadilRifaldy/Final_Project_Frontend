@@ -68,16 +68,9 @@ export function ProductCard({ product }: ProductCardProps) {
             )}
           </div>
 
-          {/* button add to category */}
-          <Button
-            className="w-full"
-            onClick={(e) => {
-              e.preventDefault(); // Prevent navigation
-              // TODO: Implement add to cart
-              alert("Feature to be added");
-            }}
-          >
-            Add to cart
+          {/* View Detail Button */}
+          <Button className="w-full" asChild>
+            <span>Lihat Detail</span>
           </Button>
         </div>
 

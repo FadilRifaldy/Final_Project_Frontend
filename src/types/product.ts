@@ -14,6 +14,7 @@ export interface IProduct {
     createdAt: string;
     updatedAt: string;
     isActive: boolean;
+    slug: string;
 }
 
 export interface IProductVariant {

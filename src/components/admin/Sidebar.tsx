@@ -18,6 +18,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import {
   Tooltip,
   TooltipContent,
@@ -346,6 +347,9 @@ export default function Sidebar({
           side="left"
           className="w-64 p-0 md:hidden"
         >
+          <VisuallyHidden>
+            <SheetTitle>Navigation Menu</SheetTitle>
+          </VisuallyHidden>
           <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
             <SidebarContent />
           </div>

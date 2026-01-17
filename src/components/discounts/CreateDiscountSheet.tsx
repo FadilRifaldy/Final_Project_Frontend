@@ -58,88 +58,93 @@ export function CreateDiscountSheet({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent side="right" className="w-full sm:max-w-2xl overflow-y-auto p-4">
-                <SheetHeader className="mb-6">
+            <SheetContent side="right" className="w-full sm:max-w-2xl p-0 flex flex-col">
+                <SheetHeader className="px-6 py-4 border-b">
                     <SheetTitle>Create Discount</SheetTitle>
+
                     <SheetDescription>
                         Create a new discount for your store. Fill in the details below.
                     </SheetDescription>
                 </SheetHeader>
 
-                <div className="space-y-6 pb-20">
-                    <BasicInfoSection
-                        name={formState.name}
-                        setName={setters.setName}
-                        description={formState.description}
-                        setDescription={setters.setDescription}
-                        type={formState.type}
-                        setType={setters.setType}
-                    />
+                {/* Scrollable Form Content */}
+                <div className="flex-1 overflow-y-auto px-6 py-4">
+                    <div className="space-y-6">
+                        <BasicInfoSection
+                            name={formState.name}
+                            setName={setters.setName}
+                            description={formState.description}
+                            setDescription={setters.setDescription}
+                            type={formState.type}
+                            setType={setters.setType}
+                        />
 
-                    <ScopeSection
-                        userRole={userRole}
-                        userStoreId={userStoreId}
-                        discountScope={formState.discountScope}
-                        setDiscountScope={setters.setDiscountScope}
-                        selectedStoreId={formState.selectedStoreId}
-                        setSelectedStoreId={setters.setSelectedStoreId}
-                    />
+                        <ProductVariantSection
+                            type={formState.type}
+                            productVariantIds={formState.productVariantIds}
+                            setProductVariantIds={setters.setProductVariantIds}
+                        />
 
-                    <ValueSection
-                        discountValueType={formState.discountValueType}
-                        setDiscountValueType={setters.setDiscountValueType}
-                        discountValue={formState.discountValue}
-                        setDiscountValue={setters.setDiscountValue}
-                    />
+                        <ScopeSection
+                            userRole={userRole}
+                            userStoreId={userStoreId}
+                            discountScope={formState.discountScope}
+                            setDiscountScope={setters.setDiscountScope}
+                            selectedStoreId={formState.selectedStoreId}
+                            setSelectedStoreId={setters.setSelectedStoreId}
+                        />
 
-                    <ConditionalFieldsSection
-                        type={formState.type}
-                        discountValueType={formState.discountValueType}
-                        minPurchase={formState.minPurchase}
-                        setMinPurchase={setters.setMinPurchase}
-                        maxDiscount={formState.maxDiscount}
-                        setMaxDiscount={setters.setMaxDiscount}
-                        buyQuantity={formState.buyQuantity}
-                        setBuyQuantity={setters.setBuyQuantity}
-                        getQuantity={formState.getQuantity}
-                        setGetQuantity={setters.setGetQuantity}
-                    />
+                        <ValueSection
+                            discountValueType={formState.discountValueType}
+                            setDiscountValueType={setters.setDiscountValueType}
+                            discountValue={formState.discountValue}
+                            setDiscountValue={setters.setDiscountValue}
+                        />
 
-                    <DateRangeSection
-                        startDate={formState.startDate}
-                        setStartDate={setters.setStartDate}
-                        endDate={formState.endDate}
-                        setEndDate={setters.setEndDate}
-                    />
+                        <ConditionalFieldsSection
+                            type={formState.type}
+                            discountValueType={formState.discountValueType}
+                            minPurchase={formState.minPurchase}
+                            setMinPurchase={setters.setMinPurchase}
+                            maxDiscount={formState.maxDiscount}
+                            setMaxDiscount={setters.setMaxDiscount}
+                            buyQuantity={formState.buyQuantity}
+                            setBuyQuantity={setters.setBuyQuantity}
+                            getQuantity={formState.getQuantity}
+                            setGetQuantity={setters.setGetQuantity}
+                        />
 
-                    <ProductVariantSection
-                        type={formState.type}
-                        productVariantIds={formState.productVariantIds}
-                        setProductVariantIds={setters.setProductVariantIds}
-                    />
+                        <DateRangeSection
+                            startDate={formState.startDate}
+                            setStartDate={setters.setStartDate}
+                            endDate={formState.endDate}
+                            setEndDate={setters.setEndDate}
+                        />
 
-                    <div className="absolute bottom-0 left-0 right-0 p-4 bg-background border-t flex justify-end gap-2">
-                        <Button
-                            variant="outline"
-                            onClick={() => onOpenChange(false)}
-                            disabled={isSubmitting}
-                        >
-                            Cancel
-                        </Button>
-                        <Button onClick={handleSubmit} disabled={isSubmitting}>
-                            {isSubmitting ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Creating...
-                                </>
-                            ) : (
-                                "Create Discount"
-                            )}
-                        </Button>
+
                     </div>
                 </div>
 
-
+                {/* Fixed Footer Buttons */}
+                <div className="px-6 py-4 bg-background border-t flex justify-end gap-2">
+                    <Button
+                        variant="outline"
+                        onClick={() => onOpenChange(false)}
+                        disabled={isSubmitting}
+                    >
+                        Cancel
+                    </Button>
+                    <Button onClick={handleSubmit} disabled={isSubmitting}>
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Creating...
+                            </>
+                        ) : (
+                            "Create Discount"
+                        )}
+                    </Button>
+                </div>
             </SheetContent>
         </Sheet>
     );
