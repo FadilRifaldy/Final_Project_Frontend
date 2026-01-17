@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import getProducts, { getProductById, getVariantsByProductId } from "@/lib/helpers/product.backend";
 import { getInventoryByVariant } from "@/lib/helpers/inventory.backend";
@@ -28,6 +28,8 @@ export function useProductDetail(slug: string) {
     const [selectedStoreId, setSelectedStoreId] = useState<string>("");
 
     const router = useRouter();
+    const searchParams = useSearchParams();
+    const variantSlug = searchParams.get("variant");
 
     // ==================== HELPER FUNCTIONS ====================
     /**
@@ -80,8 +82,18 @@ export function useProductDetail(slug: string) {
 
                 if (variantsData && variantsData.length > 0) {
                     setVariants(variantsData);
-                    // Select first variant by default
-                    setSelectedVariantId(variantsData[0].id);
+                    
+                    // Check if URL has variant param and it matches a variant
+                    let preSelectedId = variantsData[0].id;
+                    
+                    if (variantSlug) {
+                        const matchedVariant = variantsData.find(v => v.slug === variantSlug);
+                        if (matchedVariant) {
+                            preSelectedId = matchedVariant.id;
+                        }
+                    }
+
+                    setSelectedVariantId(preSelectedId);
                 } else {
                     setVariants([]);
                 }
@@ -94,7 +106,7 @@ export function useProductDetail(slug: string) {
         };
 
         fetchProductData();
-    }, [slug]);
+    }, [slug, variantSlug]);
 
     /**
      * Effect 3: Fetch inventory across ALL stores saat variant berubah

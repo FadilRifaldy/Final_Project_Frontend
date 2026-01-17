@@ -19,6 +19,7 @@ export interface IStoreProduct {
   productId: string;
   name: string;
   variantName: string;
+  variantSlug: string;
   fullName: string;
   price: number;
   image: string | null;

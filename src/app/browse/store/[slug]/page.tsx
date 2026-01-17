@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +29,8 @@ import {
     MessageCircle,
     ShoppingCart,
     Loader2,
+    ArrowLeft,
+    ArrowRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import { getStoreById, getStoreProducts, getStores } from "@/lib/helpers/store.backend";
@@ -36,6 +38,7 @@ import { IStore, IStoreProduct } from "@/types/store";
 
 export default function StorePublicPage() {
     const params = useParams();
+    const router = useRouter();
     const slug = params?.slug as string;
 
     const [store, setStore] = useState<IStore | null>(null);
@@ -154,6 +157,16 @@ export default function StorePublicPage() {
             <div className="bg-white border-b sticky top-0 z-10 shadow-sm">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center gap-4">
+                        {/* Back Button */}
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => router.back()}
+                            className="mr-2"
+                        >
+                            <ArrowLeft className="h-6 w-6" />
+                        </Button>
+
                         {/* Store Avatar */}
                         <Avatar className="h-16 w-16 sm:h-20 sm:w-20 border-2 border-primary">
                             <AvatarFallback className="bg-gradient-to-br from-amber-400 to-orange-500 text-white text-2xl font-bold">
@@ -389,8 +402,11 @@ function ProductCard({
     const productRating = getProductRating(product.id);
     const productSlug = generateProductSlug(product.name);
 
+    // Deep linking to specific variant
+    const detailUrl = `/browse/${productSlug}${product.variantSlug ? `?variant=${product.variantSlug}` : ""}`;
+
     return (
-        <Link href={`/browse/${productSlug}`} className="block">
+        <Link href={detailUrl} className="block">
             <Card className="group hover:shadow-lg transition-shadow cursor-pointer h-full">
                 <CardContent className="p-0">
                     {/* Product Image */}
@@ -450,16 +466,10 @@ function ProductCard({
                 <CardFooter className="p-3 pt-0">
                     <Button
                         size="sm"
-                        className="w-full"
-                        disabled={product.availableStock === 0}
-                        onClick={(e) => {
-                            // Prevent navigation when clicking button
-                            e.preventDefault();
-                            // TODO: Add to cart functionality
-                        }}
+                        className="cursor-pointer w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 transition shadow-sm"
                     >
-                        <ShoppingCart className="h-4 w-4 mr-2" />
-                        {product.availableStock === 0 ? "Habis" : "Keranjang"}
+                        <ArrowRight className="h-4 w-4 mr-2" />
+                        Lihat Detail
                     </Button>
                 </CardFooter>
             </Card>

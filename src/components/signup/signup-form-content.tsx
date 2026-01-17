@@ -44,20 +44,20 @@ export function SignUpFormContent({
   return (
     <div className="flex flex-col h-full max-h-[calc(100vh-12rem)] md:max-h-[730px]">
       {/* Logo & Title - Fixed at top */}
-      <div className="flex flex-col items-center mb-6 flex-shrink-0">
-        <div className="w-auto h-20 flex items-center justify-center mb-4">
+      <div className="flex flex-col items-center mb-4 flex-shrink-0">
+        <div className="w-auto h-16 flex items-center justify-center mb-3">
           <Image
             src="/grosirin-auth-amber.svg"
-            alt="EasyBite Logo"
-            width={80}
-            height={80}
-            className="w-auto h-full object-contain rounded-2xl shadow-sm"
+            alt="Grosirin Logo"
+            width={64}
+            height={64}
+            className="w-auto h-full object-contain rounded-xl shadow-sm"
           />
         </div>
-        <h1 className="text-xl sm:text-2xl font-bold mt-2 text-slate-900 text-center">
+        <h1 className="text-xl sm:text-2xl font-bold mt-1 text-slate-900 text-center leading-tight">
           {title}
         </h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1 text-center">
+        <p className="text-[10px] sm:text-xs text-slate-500 mt-0.5 text-center">
           {subtitle}
         </p>
       </div>
@@ -67,7 +67,7 @@ export function SignUpFormContent({
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
-            className="space-y-4 pb-20 md:pb-4"
+            className="space-y-3 pb-8 md:pb-2"
           >
             {/* Name */}
             <FormField
@@ -171,7 +171,7 @@ export function SignUpFormContent({
             <Button
               disabled={loading}
               type="submit"
-              className="cursor-pointer w-full h-11 text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-lg hover:shadow-xl transition-all"
+              className="cursor-pointer w-full h-10 text-white bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 shadow-md hover:shadow-lg transition-all"
             >
               {loading ? (
                 <span className="flex items-center gap-2">
@@ -193,7 +193,7 @@ export function SignUpFormContent({
             <Button
               type="button"
               variant="outline"
-              className="cursor-pointer w-full h-11 flex items-center justify-center gap-2 border-slate-300 hover:bg-slate-50"
+              className="cursor-pointer w-full h-10 flex items-center justify-center gap-2 border-slate-300 hover:bg-slate-50"
               onClick={async () => {
                 localStorage.setItem("signup_role", role);
 

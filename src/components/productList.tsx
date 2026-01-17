@@ -6,6 +6,7 @@ import { IProduct } from "@/types/product";
 import getProducts from "@/lib/helpers/product.backend";
 import { getProductVariant } from "@/lib/helpers/productVariant.backend";
 import { Skeleton } from "./ui/skeleton";
+import { MapPin } from "lucide-react";
 
 interface ProductListProps {
   title?: string;
@@ -23,6 +24,7 @@ export function ProductList({
   const [products, setProducts] = useState<IProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [storeName, setStoreName] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -30,7 +32,23 @@ export function ProductList({
         setLoading(true);
         setError(null);
 
-        const response = await getProducts(1, limit);
+        // Check for nearest store in localStorage to filter products
+        let storeId: string | undefined;
+        try {
+          const stored = localStorage.getItem("nearest_store");
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.id) {
+              storeId = parsed.id;
+              setStoreName(parsed.name);
+              console.log("🏪 Filtering products by nearest store:", parsed.name);
+            }
+          }
+        } catch (e) {
+          console.error("Error reading nearest_store:", e);
+        }
+
+        const response = await getProducts(1, limit, storeId);
 
         // Filter by category if provided
         let filteredProducts = response.data;
@@ -44,7 +62,7 @@ export function ProductList({
         const productsWithVariants = await Promise.all(
           filteredProducts.map(async (product) => {
             try {
-              const variants = await getProductVariant(product.id);
+              const variants = await getProductVariant(product.id, storeId);
               return {
                 ...product,
                 variants: variants || [],
@@ -85,14 +103,24 @@ export function ProductList({
   }
 
   return (
-    <section id="products" className="py-12 md:py-16">
-      <div className="max-w-7xl mx-auto px-4 space-y-8">
+    <section id="products" className="py-8 md:py-12">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 lg:px-20">
         {/* Header */}
-        <div>
+        <div className="mb-8">
           <h2 className="font-display text-2xl md:text-3xl font-bold text-foreground">
             {title}
           </h2>
-          <p className="text-muted-foreground mt-1">{subtitle}</p>
+          {storeName ? (
+            <p className="mt-2 text-muted-foreground">
+              Menampilkan produk dari{" "}
+              <span className="inline-flex items-center gap-1 font-medium text-foreground">
+                <MapPin className="h-4 w-4 text-amber-500" />
+                {storeName}
+              </span>
+            </p>
+          ) : (
+            <p className="text-muted-foreground mt-2">{subtitle}</p>
+          )}
         </div>
 
         {/* Products Grid */}

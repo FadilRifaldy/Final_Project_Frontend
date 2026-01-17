@@ -2,17 +2,17 @@ import { Truck, Timer, ShieldCheck } from "lucide-react";
 
 const features = [
   {
-    icon: <Truck className="w-6 h-6 text-primary" />,
+    icon: <Truck className="w-6 h-6 text-orange-600" />,
     text: "Ongkir Fleksibel",
     subtext: "Min. belanja Rp100rb",
   },
   {
-    icon: <Timer className="w-6 h-6 text-primary" />,
+    icon: <Timer className="w-6 h-6 text-orange-600" />,
     text: "Pengiriman Tentative",
     subtext: "Dalam 24 jam",
   },
   {
-    icon: <ShieldCheck className="w-6 h-6 text-primary" />,
+    icon: <ShieldCheck className="w-6 h-6 text-orange-600" />,
     text: "Produk Terjamin",
     subtext: "100% Fresh",
   },
@@ -30,7 +30,7 @@ export default function OurStore() {
                 key={i}
                 className="flex items-center justify-center gap-4 p-4 rounded-xl hover:bg-secondary transition"
               >
-                <div className="w-12 h-12 rounded-full bg-fresh-green-light flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 rounded-full bg-amber-100/50 flex items-center justify-center flex-shrink-0">
                   {f.icon}
                 </div>
 

@@ -11,6 +11,7 @@ import {
   Package,
   Check,
   AlertCircle,
+  ArrowLeft,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -378,12 +379,31 @@ export default function CheckoutPage() {
       {/* Header */}
       <div className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 shadow-lg">
         <div className="container mx-auto px-4 py-8">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2">
-            Checkout
-          </h1>
-          <p className="text-amber-50 text-sm md:text-base">
-            Selesaikan pesanan Anda
-          </p>
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <div className="flex items-center gap-4 w-full md:w-auto">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="text-white hover:bg-white/20 hover:text-white rounded-full shrink-0"
+              >
+                <ArrowLeft className="h-6 w-6" />
+              </Button>
+              <img
+                src="/grosirin-navbar-footer.svg"
+                className="h-14 w-auto object-contain bg-white rounded-xl p-2 shadow-md shrink-0"
+                alt="Logo"
+              />
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-white mb-1">
+                  Checkout
+                </h1>
+                <p className="text-amber-50 text-sm md:text-base">
+                  Selesaikan pesanan Anda
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

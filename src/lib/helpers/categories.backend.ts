@@ -128,4 +128,4 @@ export function slugify(name: string): string {
 // LEGACY EXPORTS - For backward compatibility
 // ============================================================================
 
-export default getAllCategories();
+export default getAllCategories;
