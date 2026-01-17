@@ -1,5 +1,22 @@
 import StatsCard from "./StatsCard";
-import { Box, ClockAlert, Percent, ShoppingCart } from "lucide-react";
+import {
+    Box,
+    ClockAlert,
+    Percent,
+    ShoppingCart,
+    Package,
+    ArrowRight,
+    FileText
+} from "lucide-react";
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+    CardDescription,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { getInventoryByStore } from "@/lib/helpers/inventory.backend";
 import { getAllDiscounts } from "@/lib/helpers/discounts.backend";
 import api from "@/lib/api/axios";
@@ -99,15 +116,21 @@ export default function StoreAdminDashboard() {
     }, []);
 
     return (
-        <div className="p-4 md:p-8">
+        <div className="p-4 md:p-8 space-y-8">
+            <div>
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">Dashboard Store Admin</h1>
+                <p className="text-muted-foreground">Overview statistik dan manajemen toko Anda.</p>
+            </div>
+
+            {/* Stats Overview */}
             {loading ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {[1, 2, 3, 4].map((i) => (
                         <div key={i} className="h-32 bg-gray-200 animate-pulse rounded-lg" />
                     ))}
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-8 border-gray-300 border rounded-lg p-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     <StatsCard
                         title="Total Produk"
                         value={stats.totalProducts.toString()}
@@ -137,6 +160,107 @@ export default function StoreAdminDashboard() {
                         Anda belum di-assign ke toko manapun. Hubungi Super Admin untuk assignment.
                     </p>
                 </div>
+            )}
+
+            {/* Quick Actions Panel */}
+            {!loading && assignedStoreId && (
+                <>
+                    <h2 className="text-xl font-semibold">Quick Actions</h2>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {/* Inventory Management Card */}
+                        <Card className="border shadow-sm hover:shadow-md transition-shadow">
+                            <CardHeader>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-blue-500/10 rounded-xl">
+                                        <Package className="h-6 w-6 text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <CardTitle>Inventory Management</CardTitle>
+                                        <CardDescription>Kelola stok produk di toko Anda</CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Link href="/admin/inventory">
+                                    <Button className="w-full justify-between group">
+                                        Kelola Inventory
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+
+                        {/* Discount Management Card */}
+                        <Card className="border shadow-sm hover:shadow-md transition-shadow">
+                            <CardHeader>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-emerald-500/10 rounded-xl">
+                                        <Percent className="h-6 w-6 text-emerald-600" />
+                                    </div>
+                                    <div>
+                                        <CardTitle>Discount Management</CardTitle>
+                                        <CardDescription>Atur diskon dan promo untuk toko</CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Link href="/admin/discounts">
+                                    <Button variant="outline" className="w-full justify-between group border-emerald-200 hover:bg-emerald-50 hover:text-emerald-600 text-emerald-600">
+                                        Kelola Diskon
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+
+                        {/* Orders Card */}
+                        <Card className="border shadow-sm hover:shadow-md transition-shadow">
+                            <CardHeader>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-amber-500/10 rounded-xl">
+                                        <FileText className="h-6 w-6 text-amber-600" />
+                                    </div>
+                                    <div>
+                                        <CardTitle>Orders</CardTitle>
+                                        <CardDescription>Lihat dan proses pesanan masuk</CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Link href="/admin/orders">
+                                    <Button variant="outline" className="w-full justify-between group border-amber-200 hover:bg-amber-50 hover:text-amber-600 text-amber-600">
+                                        Lihat Pesanan
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+
+                        {/* Stock Journal Card */}
+                        <Card className="border shadow-sm hover:shadow-md transition-shadow">
+                            <CardHeader>
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-purple-500/10 rounded-xl">
+                                        <Box className="h-6 w-6 text-purple-600" />
+                                    </div>
+                                    <div>
+                                        <CardTitle>Stock Journal</CardTitle>
+                                        <CardDescription>Riwayat perubahan stok produk</CardDescription>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent>
+                                <Link href="/admin/stock-journal">
+                                    <Button variant="outline" className="w-full justify-between group border-purple-200 hover:bg-purple-50 hover:text-purple-600 text-purple-600">
+                                        Lihat Riwayat
+                                        <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                    </Button>
+                                </Link>
+                            </CardContent>
+                        </Card>
+                    </div>
+                </>
             )}
         </div>
 
