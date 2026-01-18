@@ -86,14 +86,9 @@ export async function loginUser(user: IUserLogin) {
       };
     }
 
-    if (res.data.token && typeof window !== "undefined") {
-      localStorage.setItem("authToken", res.data.token);
-    }
-
     return {
       success: true,
       user: res.data.user,
-      token: res.data.token,
       message: res.data.message || "Login success",
     };
   } catch (error: unknown) {
@@ -181,14 +176,9 @@ export async function socialLogin(
       }
     );
 
-    if (data.token && typeof window !== "undefined") {
-      localStorage.setItem("authToken", data.token);
-    }
-
     return {
       success: true,
       user: data.user as IUser,
-      token: data.token,
     };
   } catch (error) {
     if (error instanceof AxiosError) {
@@ -376,7 +366,7 @@ interface ISendPasswordLinkPayload {
 };
 
 export async function sendPassLinkEmail(
- payload: ISendPasswordLinkPayload
+  payload: ISendPasswordLinkPayload
 ): Promise<ISendResetPasswordResult> {
   try {
     const res = await axios.post(
@@ -460,7 +450,7 @@ export async function checkPasswordToken(
 
     return {
       valid: true,
-      type: res.data.type, 
+      type: res.data.type,
       requireOldPassword: res.data.requireOldPassword,
     };
   } catch (error) {
@@ -468,7 +458,7 @@ export async function checkPasswordToken(
 
     return {
       valid: false,
-      type: "PASSWORD_RESET", 
+      type: "PASSWORD_RESET",
       requireOldPassword: false,
       message:
         err.response?.data?.message ||
@@ -538,7 +528,7 @@ export const uploadToCloudinary = async (
     if (axios.isAxiosError(error)) {
       throw new Error(
         error.response?.data?.error?.message ||
-          "Upload ke Cloudinary gagal"
+        "Upload ke Cloudinary gagal"
       );
     }
 
