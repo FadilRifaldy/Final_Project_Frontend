@@ -136,6 +136,11 @@ export default function StoreInfoBar() {
         setLoadingLocation(false);
         setLoadingStore(false);
         setIsRefreshing(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0
       }
     );
   };
