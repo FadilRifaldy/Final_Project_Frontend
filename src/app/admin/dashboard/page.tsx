@@ -21,10 +21,16 @@ export default function DashboardPage() {
         const response = await api.get('/auth/dashboard');
         setRole(response.data.user.role);
         setLoading(false);
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error fetching role:", error);
-        // If 401/403 (unauthenticated), redirect to login
-        router.push("/signInPage");
+        
+        // Handle specific error status
+        if (error.response?.status === 403) {
+           router.push("/unauthorized");
+        } else {
+           // 401 or network error -> Login
+           router.push("/signInPage");
+        }
       }
     };
     fetchRole();
