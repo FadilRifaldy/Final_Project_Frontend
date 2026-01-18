@@ -2,24 +2,21 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 export function middleware(request: NextRequest) {
-    // Check if user has authToken cookie
-    const authToken = request.cookies.get('authToken')?.value;
-    const isAdminRoute = request.nextUrl.pathname.startsWith('/admin');
+    // TEMPORARY: Disable middleware cookie check
+    // Cookie dari backend domain (vercel.app) tidak bisa dibaca di frontend middleware
+    // karena cross-domain. Rely on client-side auth guard di layout.tsx instead
 
-    // Protect admin routes - redirect to login if no token
-    if (isAdminRoute && !authToken) {
-        const loginUrl = new URL('/signInPage', request.url);
-        // Save the original URL to redirect back after login
-        loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
-        return NextResponse.redirect(loginUrl);
-    }
+    // Debug logging
+    console.log('[Middleware] Path:', request.nextUrl.pathname);
+    console.log('[Middleware] All cookies:', request.cookies.getAll().map(c => c.name));
 
+    // Allow all requests - client-side guard will handle auth
     return NextResponse.next();
 }
 
 // Configure which routes to run middleware on
 export const config = {
     matcher: [
-        '/admin/:path*', // Protect all admin routes
+        '/admin/:path*', // Monitor admin routes
     ],
 };
