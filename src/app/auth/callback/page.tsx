@@ -6,6 +6,9 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { socialLogin } from "@/lib/helpers/auth.backend";
 
+// Prevent prerendering - this page needs to run only on the client
+export const dynamic = "force-dynamic";
+
 export default function AuthCallbackPage() {
   const router = useRouter();
 
