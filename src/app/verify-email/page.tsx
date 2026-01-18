@@ -1,77 +1,25 @@
-"use client";
+import { Suspense } from 'react';
+import VerifyEmailContent from './verify-email-content';
+import { Loader2 } from 'lucide-react';
 
-import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
-
-import { confirmEmailVerification } from "@/lib/helpers/auth.backend";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardHeader, CardContent, CardTitle } from "@/components/ui/card";
-
-export default function VerifyEmailPage() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-  const token = searchParams.get("token");
-
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  if (!token) {
-    return <p className="text-center mt-20">Token tidak valid</p>;
-  }
-
-  const handleVerify = async () => {
-    if (!password) {
-      toast.error("Password wajib diisi");
-      return;
-    }
-
-    setLoading(true);
-
-    const res = await confirmEmailVerification(token, password);
-
-    setLoading(false);
-
-    if (!res.success) {
-      toast.error(res.message);
-      return;
-    }
-
-    toast.success(res.message);
-    router.replace("/signInPage");
-  };
-
+// Loading fallback
+function VerifyEmailLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30 px-4">
-      <Card className="w-full max-w-md rounded-2xl shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-center">
-            Verifikasi Email
-          </CardTitle>
-        </CardHeader>
-
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground text-center">
-            Masukkan password akun kamu untuk menyelesaikan verifikasi email.
-          </p>
-
-          <Input
-            type="password"
-            placeholder="Password akun"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-
-          <Button
-            className="w-full bg-amber-500 hover:bg-amber-600"
-            onClick={handleVerify}
-            disabled={loading}
-          >
-            {loading ? "Memverifikasi..." : "Verifikasi Akun"}
-          </Button>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen flex items-center justify-center bg-muted/30">
+      <div className="text-center">
+        <Loader2 className="w-16 h-16 text-amber-500 animate-spin mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-800 mb-2">Memuat...</h3>
+        <p className="text-gray-600">Mohon tunggu sebentar</p>
+      </div>
     </div>
+  );
+}
+
+// Wrapper dengan Suspense boundary
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={<VerifyEmailLoading />}>
+      <VerifyEmailContent />
+    </Suspense>
   );
 }
