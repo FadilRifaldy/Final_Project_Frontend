@@ -254,6 +254,30 @@ export default function SignInPage() {
               </div>
             </form>
           </Form>
+
+          {/* Demo Accounts Info */}
+          <div className="mt-6 p-4 bg-amber-50/50 border border-amber-100 rounded-2xl text-[10px] sm:text-xs">
+            <div className="flex items-center gap-2 text-amber-800 font-bold mb-2">
+              <div className="w-5 h-5 rounded-full bg-amber-100 flex items-center justify-center">
+                <span className="text-[10px]">💡</span>
+              </div>
+              <span>Demo Accounts for Presentation</span>
+            </div>
+            <div className="space-y-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-amber-100/50 pb-1.5 last:border-0 last:pb-0">
+                <span className="font-semibold text-amber-700 w-24">Super Admin</span>
+                <span className="text-slate-600 font-mono">superadmin@mail.com <span className="text-slate-300">/</span> @Super123</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-amber-100/50 pb-1.5 last:border-0 last:pb-0">
+                <span className="font-semibold text-amber-700 w-24">Store Admin</span>
+                <span className="text-slate-600 font-mono">storeadmin@mail.com <span className="text-slate-300">/</span> @Store123</span>
+              </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 border-b border-amber-100/50 pb-1.5 last:border-0 last:pb-0">
+                <span className="font-semibold text-amber-700 w-24">Customer</span>
+                <span className="text-slate-600 font-mono">customer1@mail.com <span className="text-slate-300">/</span> @Customer123</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
