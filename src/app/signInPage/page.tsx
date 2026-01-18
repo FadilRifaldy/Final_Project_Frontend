@@ -69,11 +69,10 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-orange-50 px-4 py-8">
-      <div className="w-full max-w-5xl flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-12">
-        <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 via-white to-orange-50 px-4 py-8 overflow-x-hidden">
+      <div className="relative w-full max-w-md">
         {/* Main Card */}
-        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-7">
+        <div className="bg-white rounded-2xl sm:rounded-3xl shadow-xl border border-slate-100 p-6 sm:p-7 relative z-10">
           {/* Logo & Title */}
           <div className="flex flex-col items-center mb-5">
             <div className="w-auto h-24 flex items-center justify-center mb-4">
@@ -256,56 +255,55 @@ export default function SignInPage() {
             </form>
           </Form>
         </div>
-      </div>
 
-      {/* Demo Accounts Info Panel */}
-      <div className="w-full max-w-md lg:max-w-xs shrink-0">
-        <div className="bg-white/80 backdrop-blur-sm p-5 sm:p-6 border border-amber-100 rounded-3xl shadow-lg">
-          <div className="flex items-center gap-3 text-amber-800 font-bold mb-4">
-            <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shadow-sm">
-              <span className="text-sm">💡</span>
+        {/* Demo Accounts Info Panel */}
+        <div className="mt-8 lg:mt-0 lg:absolute lg:left-full lg:top-1/2 lg:-translate-y-1/2 lg:ml-12 w-full lg:w-72 shrink-0">
+          <div className="bg-white/90 backdrop-blur-sm p-5 sm:p-6 border border-amber-100 rounded-3xl shadow-xl">
+            <div className="flex items-center gap-3 text-amber-800 font-bold mb-4">
+              <div className="w-8 h-8 rounded-xl bg-amber-100 flex items-center justify-center shadow-sm">
+                <span className="text-sm">💡</span>
+              </div>
+              <div className="flex flex-col">
+                <span className="text-sm leading-tight">Demo Access</span>
+                <span className="text-[10px] text-amber-600/70 font-medium">For Presentation Only</span>
+              </div>
             </div>
-            <div className="flex flex-col">
-              <span className="text-sm leading-tight">Demo Access</span>
-              <span className="text-[10px] text-amber-600/70 font-medium">For Presentation Only</span>
+            
+            <div className="space-y-4">
+              {/* Super Admin */}
+              <div className="p-3 bg-gradient-to-br from-white to-amber-50/30 rounded-2xl border border-amber-50/50">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-amber-700 mb-1">Super Admin</p>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-mono text-slate-600 bg-white/50 rounded px-1.5 py-0.5 border border-amber-100/30">superadmin@mail.com</p>
+                  <p className="text-xs font-mono text-slate-500 px-1.5">pw: @Super123</p>
+                </div>
+              </div>
+
+              {/* Store Admin */}
+              <div className="p-3 bg-gradient-to-br from-white to-orange-50/30 rounded-2xl border border-orange-50/50">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-orange-700 mb-1">Store Admin</p>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-mono text-slate-600 bg-white/50 rounded px-1.5 py-0.5 border border-orange-100/30">storeadmin@mail.com</p>
+                  <p className="text-xs font-mono text-slate-500 px-1.5">pw: @Store123</p>
+                </div>
+              </div>
+
+              {/* Customer */}
+              <div className="p-3 bg-gradient-to-br from-white to-blue-50/30 rounded-2xl border border-blue-50/50">
+                <p className="text-[10px] uppercase tracking-wider font-bold text-blue-700 mb-1">Customer</p>
+                <div className="space-y-0.5">
+                  <p className="text-xs font-mono text-slate-600 bg-white/50 rounded px-1.5 py-0.5 border border-blue-100/30">customer1@mail.com</p>
+                  <p className="text-xs font-mono text-slate-500 px-1.5">pw: @Customer123</p>
+                </div>
+              </div>
             </div>
           </div>
           
-          <div className="space-y-4">
-            {/* Super Admin */}
-            <div className="p-3 bg-gradient-to-br from-white to-amber-50/30 rounded-2xl border border-amber-50/50">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-amber-700 mb-1">Super Admin</p>
-              <div className="space-y-0.5">
-                <p className="text-xs font-mono text-slate-600 bg-white/50 rounded px-1.5 py-0.5 border border-amber-100/30">superadmin@mail.com</p>
-                <p className="text-xs font-mono text-slate-500 px-1.5">pw: @Super123</p>
-              </div>
-            </div>
-
-            {/* Store Admin */}
-            <div className="p-3 bg-gradient-to-br from-white to-orange-50/30 rounded-2xl border border-orange-50/50">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-orange-700 mb-1">Store Admin</p>
-              <div className="space-y-0.5">
-                <p className="text-xs font-mono text-slate-600 bg-white/50 rounded px-1.5 py-0.5 border border-orange-100/30">storeadmin@mail.com</p>
-                <p className="text-xs font-mono text-slate-500 px-1.5">pw: @Store123</p>
-              </div>
-            </div>
-
-            {/* Customer */}
-            <div className="p-3 bg-gradient-to-br from-white to-blue-50/30 rounded-2xl border border-blue-50/50">
-              <p className="text-[10px] uppercase tracking-wider font-bold text-blue-700 mb-1">Customer</p>
-              <div className="space-y-0.5">
-                <p className="text-xs font-mono text-slate-600 bg-white/50 rounded px-1.5 py-0.5 border border-blue-100/30">customer1@mail.com</p>
-                <p className="text-xs font-mono text-slate-500 px-1.5">pw: @Customer123</p>
-              </div>
-            </div>
-          </div>
+          <p className="text-center mt-4 text-[10px] text-slate-400 italic">
+            * Use these credentials to test specific role functionalities.
+          </p>
         </div>
-        
-        <p className="text-center mt-4 text-[10px] text-slate-400 italic">
-          * Use these credentials to test specific role functionalities.
-        </p>
       </div>
     </div>
-  </div>
   );
 }
