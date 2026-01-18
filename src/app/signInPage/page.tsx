@@ -25,6 +25,9 @@ import { Eye, EyeOff, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
 import { loginUser } from "@/lib/helpers/auth.backend";
 
+// Prevent prerendering - this page uses Supabase client
+export const dynamic = "force-dynamic";
+
 export default function SignInPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
