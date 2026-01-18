@@ -102,7 +102,7 @@ export default function CheckoutPage() {
     if (cart && activeDiscounts.length > 0) {
       calculateDiscounts();
     }
-  }, [cart, activeDiscounts]);
+  }, [cart, activeDiscounts, selectedShipping]);
 
   const fetchCart = async () => {
     const response = await getCart();
@@ -242,6 +242,40 @@ export default function CheckoutPage() {
         }
       }
     });
+
+    // 4. Check SHIPPING discount
+    // Only apply if shipping is selected and subtotal meets minPurchase
+    const shippingDiscount = activeDiscounts.find((d) =>
+      d.type === 'SHIPPING' &&
+      cart.summary.subtotal >= Number(d.minPurchase || 0)
+    );
+
+    if (shippingDiscount && selectedShipping) {
+      let shippingDiscountAmount = 0;
+      const shippingCost = Number(selectedShipping.cost);
+
+      if (shippingDiscount.discountValueType === 'PERCENTAGE') {
+        shippingDiscountAmount = (shippingCost * Number(shippingDiscount.discountValue)) / 100;
+      } else {
+        shippingDiscountAmount = Number(shippingDiscount.discountValue);
+      }
+
+      // Apply max discount if exists
+      if (shippingDiscount.maxDiscount && shippingDiscountAmount > Number(shippingDiscount.maxDiscount)) {
+        shippingDiscountAmount = Number(shippingDiscount.maxDiscount);
+      }
+
+      // Discount cannot exceed shipping cost
+      if (shippingDiscountAmount > shippingCost) {
+        shippingDiscountAmount = shippingCost;
+      }
+
+      totalDiscountAmount += shippingDiscountAmount;
+      applied.push({
+        ...shippingDiscount,
+        appliedAmount: shippingDiscountAmount,
+      });
+    }
 
     setTotalDiscount(totalDiscountAmount);
     setAppliedDiscounts(applied);
