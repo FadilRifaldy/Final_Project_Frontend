@@ -20,21 +20,24 @@ export default function DashboardPage() {
       try {
         const response = await api.get('/auth/dashboard');
         setRole(response.data.user.role);
+        setLoading(false);
       } catch (error) {
         console.error("Error fetching role:", error);
-      } finally {
-        setLoading(false);
+        // If 401/403 (unauthenticated), redirect to login
+        router.push("/signInPage");
       }
     };
     fetchRole();
-  }, []);
+  }, [router]);
 
-  // Simulate progress bar animation when loading
+  // Handle redirect based on Role
   useEffect(() => {
-    if (role === "CUSTOMER") {
-      router.push("/");
+    if (!loading && role) {
+      if (role === "CUSTOMER") {
+        router.push("/unauthorized");
+      }
     }
-  }, [role, router]);
+  }, [role, loading, router]);
 
   // Show loading with progress bar
   if (loading) {
@@ -44,5 +47,5 @@ export default function DashboardPage() {
   if (role === "SUPER_ADMIN") return <SuperAdminDashboard />;
   if (role === "STORE_ADMIN") return <StoreAdminDashboard />;
 
-  return <p className="text-center p-10">Unauthorized</p>;
+  return null;
 }
