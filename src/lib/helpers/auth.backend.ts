@@ -86,9 +86,14 @@ export async function loginUser(user: IUserLogin) {
       };
     }
 
+    if (res.data.token && typeof window !== "undefined") {
+      localStorage.setItem("authToken", res.data.token);
+    }
+
     return {
       success: true,
       user: res.data.user,
+      token: res.data.token,
       message: res.data.message || "Login success",
     };
   } catch (error: unknown) {
@@ -127,6 +132,10 @@ export async function logoutUser() {
       }
     );
 
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("authToken");
+    }
+
     return {
       success: true,
       message: res.data?.message || "Logout Success",
@@ -142,6 +151,58 @@ export async function logoutUser() {
     return {
       success: false,
       message: "Unexpected logout error",
+    };
+  }
+}
+
+
+
+export async function socialLogin(
+  accessToken: string,
+  role: "CUSTOMER" | "STORE_ADMIN" = "CUSTOMER"
+): Promise<{
+  success: boolean;
+  message?: string;
+  user?: IUser;
+  token?: string;
+}> {
+  try {
+    const { data } = await axios.post(
+      `${process.env.NEXT_PUBLIC_API_URL}/auth/social-login`,
+      {
+        accessToken,
+        role,
+      },
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+
+    if (data.token && typeof window !== "undefined") {
+      localStorage.setItem("authToken", data.token);
+    }
+
+    return {
+      success: true,
+      user: data.user as IUser,
+      token: data.token,
+    };
+  } catch (error) {
+    if (error instanceof AxiosError) {
+      return {
+        success: false,
+        message:
+          (error.response?.data as { message?: string })?.message ??
+          "Login Google gagal",
+      };
+    }
+
+    return {
+      success: false,
+      message: "Terjadi kesalahan tidak terduga",
     };
   }
 }
@@ -485,46 +546,3 @@ export const uploadToCloudinary = async (
   }
 };
 
-export async function socialLogin(
-  accessToken: string,
-  role: "CUSTOMER" | "STORE_ADMIN" = "CUSTOMER"
-): Promise<{
-  success: boolean;
-  message?: string;
-  user?: IUser;
-}> {
-  try {
-    const { data } = await axios.post(
-      `${process.env.NEXT_PUBLIC_API_URL}/auth/social-login`,
-      {
-        accessToken,
-        role,
-      },
-      {
-        withCredentials: true,
-        headers: {
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    return {
-      success: true,
-      user: data.user as IUser,
-    };
-  } catch (error) {
-    if (error instanceof AxiosError) {
-      return {
-        success: false,
-        message:
-          (error.response?.data as { message?: string })?.message ??
-          "Login Google gagal",
-      };
-    }
-
-    return {
-      success: false,
-      message: "Terjadi kesalahan tidak terduga",
-    };
-  }
-}

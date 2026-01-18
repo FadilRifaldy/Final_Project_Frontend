@@ -39,6 +39,10 @@ export default function AuthCallbackPage() {
         router.replace("/signInPage");
         return;
       }
+      
+      if (res.token) {
+        localStorage.setItem("authToken", res.token);
+      }
 
       toast.success("Login Google berhasil");
 
